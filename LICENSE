@@ -1,0 +1,11 @@
+License for the use of the repDilPCR software
+
+Copyright © 2021 by the University Hospital Ulm, Germany for all bundled files except repDilPCR_logo.png which is property of LogoDesign.net.
+
+The source code of the repDilPCR program is organized in three separate files: repDilPCR_lib.R, app.R and repDilPCR.R. repDilPCR_lib.R is the core of the program. It is a library of functions that is used by the other two scripts. app.R is a Shiny app that can be executed on a local computer or on a server providing the functions of the repDilPCR software to client computers.  app.R depends on repDilPCR_lib.R. repDilPCR.R is an R script that also provides all functions of the repDilPCR software but can be executed only locally on computers running R. It depends on repDilPCR_lib.R, too. Additionally, the program contains an exemplary csv file of test data (Test_data.csv) and a www folder with the logo of the program as a png file (repDilPCR_logo.png).
+
+The repDilPCR_lib.R, repDilPCR.R and Test_data.csv files are licensed under the GNU General Public License v3 (GPL-3), https://www.gnu.org/licenses/gpl-3.0.html.
+
+The app.R file is licensed under the GNU Affero General Public License, https://www.gnu.org/licenses/agpl-3.0.html.
+
+The logo design contained in repDilPCR_logo.png is property of LogoDesign.net, a subsidiary of Hummingbird International LLC, 668 Stony Hill Road, Suite 11, Yardley, PA 19067, USA. Usage of the logo is only allowed as a part of the program. Any rent, lease, sale, modification, duplication, distribution, alteration, retransmission or publication of any intellectual property of LogoDesign.net is strictly prohibited. Copyright © 2012-2020 by LogoDesign.net, Inc.
