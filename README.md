@@ -11,8 +11,8 @@ repDilPCR is a software tool to analyze qPCR data. It has been inspired by the e
 * High level of automatization of the whole analysis
 * Open-source
 * Fast and easy to use
-** single-click analysis of a whole dataset
-** ~1 min from uploading raw Cq values to getting publishable plots
+  * single-click analysis of a whole dataset
+  * ~1 min from uploading raw Cq values to getting publishable plots
 * Multiple customization options
 * Possibility to export tabular data at each intermediate step to analyze with third-party programs
 
