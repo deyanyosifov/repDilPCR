@@ -20,7 +20,7 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
 
-      # div(img(src="RepDilPCR_logo.png", height = 110), img(src="UKU_Logo_RGB_Optinal_Farbe.png", height = 110, style = "padding-left:25px")),
+      # div(img(src="repDilPCR_logo.png", height = 110), img(src="UKU_Logo_RGB_Optinal_Farbe.png", height = 110, style = "padding-left:25px")),
       div(img(src="repDilPCR_logo.png", height = 110)),
 
       hr(style = "border-top: lpx solid #c0c0c0;"),
@@ -1241,7 +1241,7 @@ server <- function(input, output, session) {
   )
 
   output$download.test.data.prepr <- renderUI({
-    downloadButton("download.test.data.2", "Download exemplary preprocessed test data for use with the program (independent of experimental setup")
+    downloadButton("download.test.data.2", "Download exemplary preprocessed test data for use with the program (independent of experimental setup)")
   })
   
   
