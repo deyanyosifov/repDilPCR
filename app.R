@@ -21,7 +21,7 @@ ui <- fluidPage(
     sidebarPanel(
 
       # div(img(src="RepDilPCR_logo.png", height = 110), img(src="UKU_Logo_RGB_Optinal_Farbe.png", height = 110, style = "padding-left:25px")),
-      div(img(src="RepDilPCR_logo.png", height = 110)),
+      div(img(src="repDilPCR_logo.png", height = 110)),
 
       hr(style = "border-top: lpx solid #c0c0c0;"),
 
@@ -191,6 +191,8 @@ ui <- fluidPage(
                           h3(tagList("Detailed user manual will be published soon. Potential users are advised to read the ", a("article", href = "https://doi.org/10.4161/chan.24024")," by Hui and Feng before setting up their experiment and using the program."), style="font-size:12pt"),
                           h3(tagList("\u2003")),
                           uiOutput("download.test.data"),
+                          h6(""),
+                          uiOutput("download.test.data.prepr"),
                           h6(textOutput("count"), style="font-size:10pt; color: #fff"))
         # tabPanel("Baustelle", tableOutput("bau"))
       )
@@ -1228,9 +1230,21 @@ server <- function(input, output, session) {
   )
 
   output$download.test.data <- renderUI({
-    downloadButton("download.test.data.1", "Download exemplary test data for use with the program")
+    downloadButton("download.test.data.1", "Download exemplary test data for use with the program (dilution-replicate setup)")
   })
+  
+  output$download.test.data.2 <- downloadHandler(
+    filename = c("Test_data_prepr.csv"),
+    content = function(file) {
+      file.copy("Test_data_prepr.csv", file)
+    }
+  )
 
+  output$download.test.data.prepr <- renderUI({
+    downloadButton("download.test.data.2", "Download exemplary preprocessed test data for use with the program (independent of experimental setup")
+  })
+  
+  
   ## Counter of uploaded files
   output$count <- renderText({
     if (file.exists("counter.txt")) {
