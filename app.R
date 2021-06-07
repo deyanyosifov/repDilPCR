@@ -188,7 +188,7 @@ ui <- fluidPage(
                                      qPCR data (typically less than one minute from raw Cq values to publication-ready plots) and to help users with little knowledge of statistics to select and
                                      perform the appropriate statistical tests, at least in the case of one-factor experimental designs. At the same time, the program allows experienced users to
                                      export intermediate data and perform more sophisticated analyses with external statistical software, e.g. if two-way ANOVA is necessary."), style="font-size:12pt"),
-                          h3(tagList("Detailed user manual will be published soon. Potential users are advised to read the ", a("article", href = "https://doi.org/10.4161/chan.24024")," by Hui and Feng before setting up their experiment and using the program."), style="font-size:12pt"),
+                          h3(tagList("Detailed user manual can be found ", a("here", href = "https://gitfront.io/r/deyanyosifov/c8e8e53b2f70690abb47d0847dabe55c31e73afd/repDilPCR/"), " (still in the process of writing). Potential users are advised to read the ", a("article", href = "https://doi.org/10.4161/chan.24024")," by Hui and Feng before setting up their experiment and using the program."), style="font-size:12pt"),
                           h3(tagList("\u2003")),
                           uiOutput("download.test.data"),
                           h6(""),
