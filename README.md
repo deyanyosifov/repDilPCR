@@ -99,11 +99,12 @@ In this example fragment, three experimental groups are present ("CellLine1", "C
 ### Usage of the Shiny app
 The Shiny app can be used via any modern web browser. Users have two options:
 * access a publicly available Shiny server with repDilPCR installed on it, e.g. the installation hosted at the University Hospital of Ulm (http://not-yet-available)
-* if they have installed repDilPCR on their local computer (see above for how-to), they can start the R environment and issue the following command,
+* if they have installed repDilPCR on their local computer (see above for how-to), they can start the R environment and issue the following commands,
 ```
+library(shiny)
 runApp("~/repDilPCR/app.R", launch.browser= TRUE)
 ```
-if necessary replacing `~/repDilPCR` with the actual path to their installation. This should launch the program and automatically start a new browser window or tab to access it.
+replacing the `~/repDilPCR` part with the actual path to their installation, if deviating. This should launch the program and automatically start a new browser window or tab to access it.
 
 
 ### Usage of the R script
