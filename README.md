@@ -104,7 +104,7 @@ The Shiny app can be used via any modern web browser. Users have two options:
   library(shiny)
   runApp("~/repDilPCR/app.R", launch.browser = TRUE)
   ```
-replacing the `~/repDilPCR` part with the actual path to their installation, if deviating. This should launch the program and automatically start a new browser window or tab to access it.
+  replacing the `~/repDilPCR` part with the actual path to their installation, if deviating. This should launch the program and automatically start a new browser    window or tab to access it.
 
 
 ### Usage of the R script
