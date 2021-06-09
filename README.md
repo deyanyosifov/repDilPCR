@@ -97,6 +97,14 @@ CellLine2_2,2,1.19,1.27
 In this example fragment, three experimental groups are present ("CellLine1", "CellLine1 (trt)" and "CellLine2"), the first two of which form a pair (baseline vs. treated), as the same number (1) is present in the second column of all rows occupied by replicates of these two samples ("CellLine2" is part of another pair, as its replicates have the number 2 in the second column.) Each experimental group has 9 biological replicates. The example fragment above includes two genes of interest ("GOI1" and "GOI2"). The order in which you enter your samples in the table is important because this will also be the order in which your samples will be displayed on the graphs, i.e. the sample that the program finds in the first row will become the leftmost sample on the graphs and so on.
 
 ### Usage of the Shiny app
+The Shiny app can be used via any modern web browser. Users have two options:
+* access a publicly available Shiny server with repDilPCR installed on it, e.g. the installation hosted at the University Hospital of Ulm (http://not-yet-available)
+* if they have installed repDilPCR on their local computer (see above for how-to), they can start the R environment and issue the following command,
+```
+runApp("~/repDilPCR/app.R", launch.browser= TRUE)
+```
+if necessary replacing `~/repDilPCR` with the actual path to their installation. This should launch the program and automatically start a new browser window or tab to access it.
+
 
 ### Usage of the R script
 
