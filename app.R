@@ -1278,7 +1278,7 @@ server <- function(input, output, session) {
     if (length(Sys.glob(delfil)) != 0) {
       if (file.exists(Sys.glob(delfil))) {
         delfil.list <- Sys.glob(delfil)
-        delfil.list <- delfil.list[!grepl(paste0(c(".R$", "Test_data.csv", "Test_data_prepr.csv", "counter.txt", "LICENSE", "README.md"), collapse = "|"), delfil.list)]
+        delfil.list <- delfil.list[!grepl(paste0(c(".R$", "Test_data.csv", "Test_data_precalc.csv", "counter.txt", "LICENSE", "README.md"), collapse = "|"), delfil.list)]
         file.remove(delfil.list)
       }
     }
