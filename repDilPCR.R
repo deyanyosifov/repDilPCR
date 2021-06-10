@@ -9,11 +9,11 @@
 
 ## Variables
 # Mandatory
-Cq.table <- c("/media/D:/PostDoc/Others/Michi/20210316c/miRNA_qPCR_20210129_dil_b2.csv") ## Full path to the Cq-table
+Cq.table <- c("/media/D:/PostDoc/Others/Michi/20210316c/miRNA_qPCR_20210129_dil_b.csv") ## Full path to the Cq-table
 RG <- 3 ## Number of reference genes
 
 # Optional
-impute <- TRUE # Enter TRUE or FALSE to respectively enable or disable imputation of missing Cq-values of reference genes
+impute <- TRUE # Enter TRUE or FALSE to respectively enable or disable imputation of missing Cq values of reference genes
 ref.sample <- "default" # Reference sample, in which gene expression will be regarded as 1 (100%) on linear scale and 0 on log2-scale, respectively. If "default", this will be the first sample in the table, resp. the leftmost sample on the plots. Change to the name of another sample (without a trailing _ and replicate number) to make it the reference sample. If "" (empty), results will be shown in their original form, without forcing any particular sample to be 1 (100%) or 0.
 plot.format <- "PDF" # Choose format and adjust settings of graphical output. Possible formats are "PDF" (default), "PNG", "both" or "none".
 png.size <- c(190,134) # Width and height of PNG plots in mm. The default values are 210 and 148 and correspond to the A5 page size format in landscape orientation.
@@ -55,7 +55,7 @@ if (colnames(qPCR)[3] == "Dilution") {
     write.csv(qPCR, file=paste0(gsub(".csv", "", Cq.table), "_with_imputed_missing_values.csv"))
   }
 
-  ## Make a fictituous reference gene by averaging the Cq-values of the real reference genes at each sample/dilution/replicate combination
+  ## Make a fictituous reference gene by averaging the Cq values of the real reference genes at each sample/dilution/replicate combination
   qPCR <- rd.ref(qPCR, RG)
 
   ## Multiple linear regression for standard curves

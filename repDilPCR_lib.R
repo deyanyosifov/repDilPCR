@@ -120,7 +120,7 @@ return(qPCR)
 # write.csv(qPCR, file=paste0(gsub(".csv", "", Cq.table), "_with_imputed_missing_values.csv"))
 }
 
-## Make a fictituous reference gene by averaging the Cq-values of the real reference genes at each sample/dilution/replicate combination
+## Make a fictituous reference gene by averaging the Cq values of the real reference genes at each sample/dilution/replicate combination
 rd.ref <- function(qPCR, RG) {
   qPCR$NF <- apply(as.data.frame(qPCR[,seq(RG)+3], stringsAsFactors = FALSE),1, mean)
   return(qPCR)

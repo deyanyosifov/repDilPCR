@@ -31,7 +31,7 @@ ui <- fluidPage(
                    h3("Number of reference genes"),
                    value = 3),
 
-      checkboxInput("impute", "Impute missing Cq-values of reference genes", value = TRUE),
+      checkboxInput("impute", "Impute missing Cq values of reference genes", value = TRUE),
       h6(""), helpText("Do not use if your experiment does not contain replicates."),
       br(),
       actionButton("analyze", "Analyze", width = "100%", style="font-size:16pt; color: #fff; background-color: #5eba7d; border-color: #5e6600"),
@@ -253,7 +253,7 @@ server <- function(input, output, session) {
     qPCR()
   })
 
-  # Make a fictitious reference gene by averaging the Cq-values of the real reference genes at each sample/dilution/replicate combination ----
+  # Make a fictitious reference gene by averaging the Cq values of the real reference genes at each sample/dilution/replicate combination ----
   qPCR.NF <- reactive({
     if (input$analyze > 0) {
       if (colnames(inp.data()$qPCR)[3] == "Dilution") {
@@ -602,7 +602,7 @@ server <- function(input, output, session) {
   })
 
 
-  # Downloadable csv of input data with imputed missing Cq-values of reference genes ----
+  # Downloadable csv of input data with imputed missing Cq values of reference genes ----
   observeEvent(qPCR.NF(), {
   output$download.qPCR1 <- downloadHandler(
     filename = function() {
@@ -620,7 +620,7 @@ server <- function(input, output, session) {
 
   output$download.qPCR <- renderUI({
     req(input$Cq.table, qPCR())
-    downloadButton("download.qPCR1", "Download table with imputed Cq-values (if any)")
+    downloadButton("download.qPCR1", "Download table with imputed Cq values (if any)")
   })
 
   output$download.qPCR.b <- renderUI({
@@ -634,11 +634,11 @@ server <- function(input, output, session) {
     req(input$Cq.table, qPCR())
     h6("")
     helpText("This is a table of preprocessed input data,
-                    including imputed missing Cq-values of reference genes
+                    including imputed missing Cq values of reference genes
                     if the respective option was selected and if indeed the input
                     data contained missing values. The imputation is done
                     by the R package \"mice\" based on the available
-                    Cq-values of reference genes from replicates with
+                    Cq values of reference genes from replicates with
                     non-missing data using the following parameters:
                     imputation method = \"midastouch\" (weighted predictive
                     mean matching), number of multiple imputations = 20,
