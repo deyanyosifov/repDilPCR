@@ -192,7 +192,7 @@ ui <- fluidPage(
                           h3(tagList("\u2003")),
                           uiOutput("download.test.data"),
                           h6(""),
-                          uiOutput("download.test.data.prepr"),
+                          uiOutput("download.test.data.precalc"),
                           h6(textOutput("count"), style="font-size:10pt; color: #fff"))
         # tabPanel("Baustelle", tableOutput("bau"))
       )
@@ -1234,13 +1234,13 @@ server <- function(input, output, session) {
   })
   
   output$download.test.data.2 <- downloadHandler(
-    filename = c("Test_data_prepr.csv"),
+    filename = c("Test_data_precalc.csv"),
     content = function(file) {
-      file.copy("Test_data_prepr.csv", file)
+      file.copy("Test_data_precalc.csv", file)
     }
   )
 
-  output$download.test.data.prepr <- renderUI({
+  output$download.test.data.precalc <- renderUI({
     downloadButton("download.test.data.2", "Download exemplary preprocessed test data for use with the program (independent of experimental setup)")
   })
   
