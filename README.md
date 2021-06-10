@@ -1,7 +1,7 @@
 # repDilPCR
 
 <div align="justify">
-repDilPCR is a software tool to analyze qPCR data. It has been inspired by the efficient dilution-replicate design for real-time PCR assays by Hui and Feng (Kwokyin Hui & Zhong-Ping Feng. Efficient experimental design and analysis of real-time PCR assays. Channels 2013, 7:3, 160-170, https://doi.org/10.4161/chan.24024) and is the first tool to enable the analysis of experiments performed according to this design. The statistical and the graphical functions of the program can also be used with precalcocessed data obtained by more conventional assay designs and evaluation methods.
+repDilPCR is a software tool to analyze qPCR data. It has been inspired by the efficient dilution-replicate design for real-time PCR assays by Hui and Feng (Kwokyin Hui & Zhong-Ping Feng. Efficient experimental design and analysis of real-time PCR assays. Channels 2013, 7:3, 160-170, https://doi.org/10.4161/chan.24024) and is the first tool to enable the analysis of experiments performed according to this design. The statistical and the graphical functions of the program can also be used with preprocessed data obtained by more conventional assay designs and evaluation methods.
 
 ## Key features
 * Ability to use multiple reference genes
@@ -21,7 +21,7 @@ In a qPCR experiment, it is of key importance to determine the efficiency of the
 
 repDilPCR utilizes the described dilution-replicate analytical method (Kwokyin Hui & Zhong-Ping Feng. Efficient experimental design and analysis of real-time PCR assays. Channels 2013, 7:3, 160-170, https://doi.org/10.4161/chan.24024) and extends it by adding the possibility to use multiple reference genes. It also offers capabilities for performing statistical tests and plotting publication-ready graphs. The program has been designed with the philosophy to automate and speed up analysis of qPCR data (typically less than one minute from raw Cq values to publication-ready plots) and to help users with little knowledge of statistics to select and perform the appropriate statistical tests, at least in the case of one-factor experimental designs. At the same time, the program allows experienced users to export intermediate data and perform more sophisticated analyses with external statistical software, e.g. if two-way ANOVA is necessary.
 
-Although the primary goal of the program is to enable analysis of qPCR data via the dilution-replicate approach, the statistical and plotting functions can also be used with precalcocessed data (relative expression values) obtained by usual assay designs and evaluation methods.
+Although the primary goal of the program is to enable analysis of qPCR data via the dilution-replicate approach, the statistical and plotting functions can also be used with preprocessed data (relative expression values) obtained by usual assay designs and evaluation methods.
 
 ## Installation
 The program can be installed on a local computer or on a server (see below). Alternatively, users can freely access a working installation hosted on a server at the University Hospital in Ulm, Germany (http://not-yet-available). This service is anonymous, does not require registration and complies with common standards for protection of user data: raw data uploaded by the user are processed on the server and used to generate results that can be downloaded by the user; after the user closes the session by closing the browser window all uploaded data and processed results are automatically deleted from the server.
@@ -105,6 +105,14 @@ The Shiny app can be used via any modern web browser. Users have two options:
   runApp("~/repDilPCR/app.R", launch.browser = TRUE)
   ```
   replacing the `~/repDilPCR` part with the actual path to their installation, if deviating. This should launch the program and automatically start a new browser    window or tab to access it.
+  
+#### Upload your data
+This is straightforward: just click the `Browse` button, select your already prepared CSV file and upload it. At this point, if your file was formatted correctly, your data should appear in the pane to the right of the app control panel. The program will automatically know whether your data contain Cq values or already calculated relative expression levels. If the browser window grays out, this means that an error has occurred, most probably because your file was not formatted correctly. You will have to refresh the page and upload a corrected version of your CSV file that adheres to the specifications stated above.
+
+#### Select your reference genes and (optionally) impute missing Cq-values
+This is very easy because you have already arranged the columns with the Cq values of your reference genes in the place where the program expects them: between the column "Dilution" and the columns with the Cq values of your genes of interest. The only thing that the program does not yet know is how many of them there are. You give this information by entering the correct number under `Number of reference genes`.
+
+As it happens every now and then, a single or several reactions on your PCR plate may fail (pipetting errors, contamination with inhibiting substances, bad arrangement of the planets, you name it). Usually, this is not a big problem with the classic design of qPCR experiments, as researchers commonly plan to have technical triplicates or at least duplicates for each biological replicate and if one of the technical replicates fails, the average of the remaining ones can still be used at the cost of some loss of precision. However, you remember that with the dilution-replicate design we do not have identical technical replicates but so called dilution replicates. If you have a single reference gene in your experiment (not recommended, see this classic work: https://doi.org/10.1186/gb-2002-3-7-research0034), 
 
 
 ### Usage of the R script
