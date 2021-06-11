@@ -77,7 +77,7 @@ ui <- fluidPage(
       tabsetPanel(id = "panels",
         tabPanel("Input data", tableOutput("inp.data")),
         tabPanel(title = "Preprocessed input data", shinycssloaders::withSpinner(tableOutput("qPCR")), value = 9),
-        tabPanel(title = "Diagnostic plots",
+        tabPanel(title = "Regression plots",
                  tabsetPanel(
                    tabPanel("Standard curves", uiOutput("stand.curves")),
                    tabPanel("Cq-Cq plots", uiOutput("Cq.plots"))
@@ -253,7 +253,7 @@ server <- function(input, output, session) {
     qPCR()
   })
 
-  # Make a fictitious reference gene by averaging the Cq values of the real reference genes at each sample/dilution/replicate combination ----
+  # Make a virtual reference gene by averaging the Cq values of the real reference genes at each sample/dilution/replicate combination ----
   qPCR.NF <- reactive({
     if (input$analyze > 0) {
       if (colnames(inp.data()$qPCR)[3] == "Dilution") {
