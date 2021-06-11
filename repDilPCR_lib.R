@@ -323,7 +323,7 @@ rd.plot.Cq.Cq <- function(qPCR, Cq.list, GOIs, font.size) {
       ggplot2::geom_line(ggplot2::aes_(y = as.name(pred.Cq.names[i]))) +
       ggplot2::xlim(floor(min(qPCR$NF)), ceiling(max(qPCR$NF))) +
       ggplot2::ylim(floor(min(pred.Cq.df[,i])), ceiling(max(pred.Cq.df[,i]))) +
-      ggplot2::coord_fixed(ratio=1) +
+      # ggplot2::coord_fixed(ratio=1) +
       ggplot2::xlab(c("NF (Cq)")) +
       ggplot2::ylab(paste(GOIs[i],"(Cq)")) +
       ggplot2::theme_bw() +
