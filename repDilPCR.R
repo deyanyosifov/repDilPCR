@@ -1,6 +1,6 @@
 ## Title: repDilPCR - an R Script to Analyze qPCR Data by the Dilution-replicate Method
 ## File name: repDilPCR_CLI.R
-## Version: 1.0.1
+## Version: 1.0.2
 ## Date: 2021-06-10
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
@@ -9,7 +9,7 @@
 
 ## Variables
 # Mandatory
-Cq.table <- c("/media/D:/PostDoc/Others/Michi/20210316c/miRNA_qPCR_20210129_dil_b.csv") ## Full path to the Cq-table
+Cq.table <- c("~/repDilPCR/210520_CoC_run_dilrep_miRNA.csv") ## Full path to the Cq-table
 RG <- 3 ## Number of reference genes
 
 # Optional
@@ -196,3 +196,4 @@ save.tables <- rd.save.tables(Cq.table = Cq.table, rel.q.detailed = rel.q.norm.r
 
 ## Print warning messages if any
 rd.warnings <- rd.warn(ref.sample = statistics.results$ref.sample, rel.q.mean = statistics.results$rel.q.mean, noref.warn = noref.warn, statistics = statistics.results$statistics, posthoc = posthoc, nostatref.warn = nostatref.warn, frw = statistics.results$frw, few.repl.warn = statistics.results$few.repl.warn)
+

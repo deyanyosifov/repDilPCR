@@ -1,6 +1,6 @@
 ## Title: A Library of Functions Used by both the repDilPCR R Script and the repDilPCR Shiny App
 ## File name: repDilPCR_lib.R
-## Version: 1.0.1
+## Version: 1.0.2
 ## Date: 2021-06-10
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
@@ -423,7 +423,11 @@ rd.rel.quant <- function(qPCR, Cq.list, eff.df, GOIs) {
   }
 
   rel.q.detailed <- as.data.frame(rel.quantities, stringsAsFactors = FALSE)
-  rel.q <- rel.q.detailed[,GOIs]
+  if(ncol(rel.q.detailed) > 1) {
+    rel.q <- rel.q.detailed[,GOIs]
+  } else  {
+    rel.q <- rel.q.detailed
+  }
   rel.q.df <- as.data.frame(cbind(as.vector(as.matrix(rel.q)), rep(rownames(rel.q),ncol(rel.q)), rep(colnames(rel.q), each=nrow(rel.q))), stringsAsFactors = FALSE)
   colnames(rel.q.df) <- c("Rel.quant", "Replicates", "Genes")
   rel.q.df$Samples <- gsub("_.*","",rel.q.df$Replicates)

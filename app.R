@@ -1,6 +1,6 @@
 ## Title: repDilPCR - a Shiny App to Analyze qPCR Data by the Dilution-replicate Method
 ## File name: app.R
-## Version: 1.0.1
+## Version: 1.0.2
 ## Date: 2021-06-10
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
