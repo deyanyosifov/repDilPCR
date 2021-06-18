@@ -126,7 +126,7 @@ Simply click on the big green `Analyze` button in the app control panel. All opt
 #### Check the results of the regression analysis
 *(This step is only relevant when working with raw Cq values.)*
 
-It is good practice to inspect the standard curves and Cq-Cq plots before proceeding further to make sure that there are no outliers and that the coefficients of determination (R<sup>2</sup>) are large enough (close to 1). Go to the `Regression plot` tab (*only visible when working with raw Cq values*) and two subtabs will appear: `Standard curves` and `Cq-Cq plots`.
+It is good practice to inspect the standard curves and Cq-Cq plots before proceeding further to make sure that there are no outliers and that the coefficients of determination (R<sup>2</sup>) are large enough (close to 1). Go to the `Regression plot` tab (*only visible when working with raw Cq values*) and two subtabs will appear: `Standard curves` and `Cq-Cq plots`. Note that depending on the number of your samples it may take some time (seconds) from the moment you click on one of them till the graphs are rendered and displayed.
 
 The standard curve plots will be listed one under the other in the following order: first the genes of interest, then the virtual reference gene ("NF") produced by averaging the Cq values of the real reference genes and then the real reference genes themselves. Each plot will consist of as many standard curves as there are samples (biological replicates) and all of them will be parallel to each other (because we have performed multiple linear regression with fixed slope). Different colour will be assigned to each sample (biological replicate) to help you identify them on the plots. Statistical summary will be displayed under the legend of each plot and will include residual standard error with degrees of freedom, number of missing observations (if any), coefficients of determination (R<sup>2</sup> and adjusted R<sup>2</sup>), F-statistic with degrees of freedom and p-value of the regression. The PCR efficiency ("Eff") for each amplicon will be displayed in the respective plot together with its 95%-confidence interval. This is what a typical standard curves plot looks like:
 
@@ -137,6 +137,10 @@ Efficiences can be downloaded as a table by navigating to `Download results / In
 The `Cq-Cq plots` subtab will include Cq-Cq plots for each gene of interest against the virtual reference gene. Again, each plot will consist of as many parallel regression lines as there are samples (biological replicates) and will have a statistical summary underneath, as for the standard curves plots. Similarly, Cq-Cq plots can be downloaded as a file from the `Download results / Intermediate data` subtab. This is what a typical Cq-Cq plot looks like:
 
 ![plot](./www/Cq-Cq_plots.png)
+
+#### Look at the results
+repDilPCR aims to 
+The `Results` tab has two subtabs: `Plots in linear scale` and `Plots in logarithmic scale`. Each of them will have its own subtabs, that will display your results as different types of graphs. The exact types of plots that are available will depend on the type of statistical tests that you have chosen on the left: parametric or non-parametric. If "parametric" is selected the available choices will be: `Dot plots (all points)`, `Dot plots (means and standard deviations)`, `Bar graphs (means and standard deviations)`
 
 ### Usage of the R script
 
