@@ -24,9 +24,9 @@ repDilPCR utilizes the described dilution-replicate analytical method (Kwokyin H
 Although the primary goal of the program is to enable analysis of qPCR data via the dilution-replicate approach, the statistical and plotting functions can also be used with preprocessed data (relative expression values) obtained by usual assay designs and evaluation methods.
 
 ## Installation
-The program can be installed on a local computer or on a server (see below). Alternatively, users can freely access a working installation hosted on a server at the University Hospital in Ulm, Germany (http://not-yet-available). This service is anonymous, does not require registration and complies with common standards for protection of user data: raw data uploaded by the user are processed on the server and used to generate results that can be downloaded by the user; after the user closes the session by closing the browser window all uploaded data and processed results are automatically deleted from the server.
+The program can be installed on a local computer or on a server (see below). Alternatively, users can freely access and use a working installation hosted on a server at the University Hospital in Ulm, Germany (http://not-yet-available). This service is anonymous, does not require registration and complies with common standards for protection of user data: raw data uploaded by the user are processed on the server and used to generate results that can be downloaded by the user; after the user closes the session by closing the browser window all uploaded data and processed results are automatically deleted from the server.
 
-#### Prerequisites
+#### Prerequisites for installation
 * A working installation of R (version 3.6.0 or more recent) on a computer with a Linux or Windows operating system. (Theoretically MacOS should be possible, too, but I haven't had the chance to test whether it works.) The Rstudio integrated development environment is recommended for convenient use of the script but not required.
 * The following R packages have to be installed: `car`, `gridExtra`, `tidyverse`, `mice`, `PMCMRplus`, `ggbeeswarm` and `ggsignif` (needed for both the ordinary R script and the Shiny app), as well as `shiny`, `shinycssloaders` and `shinyalert` (needed for the Shiny app only). It's possible that `PMCMRplus` will initially fail to install on a Debian or Ubuntu Linux system. The solution is to first install the GNU Multiple Precision Arithmetic Library (e.g. `gmp-6.2.1.tar.lz`) from https://gmplib.org/, as well as the package `libmpfr-dev` (`sudo apt install libmpfr-dev`).
 
@@ -106,10 +106,10 @@ The Shiny app can be used via any modern web browser. Users have two options:
   ```
   replacing the `~/repDilPCR` part with the actual path to their installation, if deviating. This should launch the program and automatically start a new browser    window or tab to access it.
   
-#### Upload your data
+#### 1. Upload your data
 This is straightforward: just click the `Browse` button, select your already prepared CSV file and upload it. At this point, if your file was formatted correctly, your data should appear in the pane to the right of the app control panel. The program will automatically know whether your data contain Cq values or already calculated relative expression levels. If the browser window grays out, this means that an error has occurred, most probably because your file was not formatted correctly. You will have to refresh the page and upload a corrected version of your CSV file that adheres to the specifications stated above.
 
-#### Select your reference genes and (optionally) impute missing Cq values
+#### 2. Select your reference genes and (optionally) impute missing Cq values
 *(This whole step is only relevant when working with raw Cq values.)*
 
 This is very easy because you have already arranged the columns with the Cq values of your reference genes in the place where the program expects them to be: between the column "Dilution" and the columns with the Cq values of your genes of interest. The only thing that the program does not yet know is how many of them there are. You provide this information by entering the correct number under `Number of reference genes` in the app control panel.
@@ -120,10 +120,10 @@ In principle, if you have multiple reference genes in your experiment (strongly 
 
 You can see the full preprocessed dataset (original and imputed values together in a single table) by clicking on the tab "Preprocessed input data" in the right pane of the program window (*this tab is only visible when working with raw Cq values*). This preprocessed table will contain two additional columns titled "Samples" and "NF", where "NF" is a virtual reference gene whose Cq values are obtained by averaging the Cq values of the real reference genes. If you want, you can download this table by going to `Download results / Intermediate data` and clicking on the `Download table with imputed Cq values (if any)` button.
 
-#### Analyze your data
+#### 3. Analyze your data
 Simply click on the big green `Analyze` button in the app control panel. All optional parameters below the button can be adjusted afterwards, too. The results will appear in the respective tabs of the right pane of the program window **after** you click on them.
 
-#### Check the results of the regression analysis
+#### 4. Check the results of the regression analysis
 *(This step is only relevant when working with raw Cq values.)*
 
 It is good practice to inspect the standard curves and Cq-Cq plots before proceeding further to make sure that there are no outliers and that the coefficients of determination (R<sup>2</sup>) are large enough (close to 1). Go to the `Regression plot` tab (*only visible when working with raw Cq values*) and two subtabs will appear: `Standard curves` and `Cq-Cq plots`. Note that depending on the number of your samples it may take some time (seconds) from the moment you click on one of them till the graphs are rendered and displayed.
@@ -138,9 +138,14 @@ The `Cq-Cq plots` subtab will include Cq-Cq plots for each gene of interest agai
 
 ![plot](./www/Cq-Cq_plots.png)
 
-#### Look at the results
+#### 5. Look at the results
 repDilPCR aims to 
-The `Results` tab has two subtabs: `Plots in linear scale` and `Plots in logarithmic scale`. Each of them will have its own subtabs, that will display your results as different types of graphs. The exact types of plots that are available will depend on the type of statistical tests that you have chosen on the left: parametric or non-parametric. If "parametric" is selected the available choices will be: `Dot plots (all points)`, `Dot plots (means and standard deviations)`, `Bar graphs (means and standard deviations)`
+The `Results` tab has two subtabs: `Plots in linear scale` and `Plots in logarithmic scale`. Each of them will have its own subtabs, that will display your results as different types of graphs. The exact types of plots that are available will depend on the type of statistical tests that you have chosen on the left: parametric or non-parametric. If "parametric" is selected, the available choices will be: `Dot plots (all points)`, `Dot plots (means and standard deviations)`, `Bar graphs (means and standard deviations)`. If "non-parametric" is selected, the available choices will be `Dot plots (all points)` and `Box plots`. The control panel on the left gives you the opportunity to change the visual appearance of the plots, as well as to control parameters of the statistical tests.
+
+##### 5.1. Statistics
+
+
+
 
 ### Usage of the R script
 
