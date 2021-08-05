@@ -1,7 +1,7 @@
 ## Title: A Library of Functions Used by both the repDilPCR R Script and the repDilPCR Shiny App
 ## File name: repDilPCR_lib.R
 ## Version: 1.0.2
-## Date: 2021-06-10
+## Date: 2021-08-05
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
@@ -661,10 +661,10 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
             }
           }
           if (test.type == "non-parametric") {
-            res.KW[[i]] <-  PMCMRplus::kruskalTest(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i))
-            if (res.KW[[i]]$p.value <= p) {
+            # res.KW[[i]] <-  PMCMRplus::kruskalTest(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i))
+            # if (res.KW[[i]]$p.value <= p) {
               res.pairs[[i]] <- pairwise.wilcox.test(subset(rel.q.log, Genes == i)$Rel.quant, subset(rel.q.log, Genes == i)$Samples, p.adjust.method = "none", paired = FALSE)
-            }
+            # }
           }
           for (k in colnames(res.pairs[[i]]$p.value)) {
             for (l in rownames(res.pairs[[i]]$p.value)) {
@@ -827,7 +827,7 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
           stat.test[[i]] <- paste0("Statistical test(s): Welch's ANOVA (p = ", signif(oneway.test(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i), var.equal = FALSE)$p.value, digits = 2),"), pairwise ", gsub("\n\t\t", " ", res.pairs[[i]]$method))
         }
         if (test.type == "non-parametric") {
-          stat.test[[i]] <- paste0("Statistical test(s): Kruskal-Wallis (p = ", signif(res.KW[[i]]$p.value, digits = 2),"), pairwise ", gsub("\n\t\t", " ", res.pairs[[i]]$method))
+          stat.test[[i]] <- paste0("Statistical test(s): pairwise ", gsub("\n\t\t", " ", res.pairs[[i]]$method))
         }
       }
     }
