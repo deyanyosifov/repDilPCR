@@ -139,7 +139,6 @@ The `Cq-Cq plots` subtab will include Cq-Cq plots for each gene of interest agai
 ![plot](./www/Cq-Cq_plots.png)
 
 #### 5. Look at the results
-repDilPCR aims to 
 The `Results` tab has two subtabs: `Plots in linear scale` and `Plots in logarithmic scale`. Each of them will have its own subtabs, that will display your results as different types of graphs. The exact types of plots that are available will depend on the type of statistical tests that you have chosen on the left: parametric or non-parametric. If "parametric" is selected, the available choices will be: `Dot plots (all points)`, `Dot plots (means and standard deviations)` and `Bar graphs (means and standard deviations)`. If "non-parametric" is selected, the available choices will be `Dot plots (all points)` and `Box plots`. The control panel on the left gives you the opportunity to change the visual appearance of the plots, as well as to control parameters of the statistical tests. Labelling of samples and genes will happen automatically based on the information in the uploaded data table and will not require additional effort from you.
 
 ##### 5.1. Statistics
