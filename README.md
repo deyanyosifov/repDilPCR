@@ -153,18 +153,27 @@ When the option `selected pairs` is selected, experimental groups will be compar
 These are some exemplary plots using the test data above:
 
 ![plot](./www/Relative_expression_dotplot.png)
+
 *Dot plot (all points) in linear scale, all groups compared to a referent one*
 
+
 ![plot](./www/Relative_log_expression_dotplot_SD.png)
+
 *Dot plot (means and confidence intervals) in logarithmic scale, all groups compared to a referent one*
 
+
 ![plot](./www/Relative_expression_boxplot.png)
+
 *Box plot in linear scale, all groups compared to a referent one via non-parametric tests*
 
+
 ![plot](./www/Relative_expression_bar_graph.png)
+
 *Bar graph in linear scale, all groups compared to one another*
 
+
 ![plot](./www/Relative_log_expression_bar_graph.png)
+
 *Bar graph in logarithmic scale, groups within selected pairs compared to one another*
 
 <sub>Technical notes:</sub>
