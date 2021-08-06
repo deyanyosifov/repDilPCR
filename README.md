@@ -152,25 +152,25 @@ When the option `selected pairs` is selected, experimental groups will be compar
 
 These are some exemplary plots using the test data above:
 
-*Dot plot (all points) in linear scale, all groups compared to a referent one:*
-
 ![plot](./www/Relative_expression_dotplot.png)
 
-*Dot plot (means and confidence intervals) in logarithmic scale, all groups compared to a referent one:*
+*Dot plot (all points) in linear scale, all groups compared to a referent one*
 
 ![plot](./www/Relative_log_expression_dotplot_SD.png)
 
-*Box plot in linear scale, all groups compared to a referent one via non-parametric tests:*
+*Dot plot (means and confidence intervals) in logarithmic scale, all groups compared to a referent one*
 
 ![plot](./www/Relative_expression_boxplot.png)
 
-*Bar graph in linear scale, all groups compared to one another:*
+*Box plot in linear scale, all groups compared to a referent one via non-parametric tests*
 
 ![plot](./www/Relative_expression_bar_graph.png)
 
-*Bar graph in logarithmic scale, groups within selected pairs compared to one another:*
+*Bar graph in linear scale, all groups compared to one another*
 
 ![plot](./www/Relative_log_expression_bar_graph.png)
+
+*Bar graph in logarithmic scale, groups within selected pairs compared to one another*
 
 <sub>Technical notes:</sub>
 <sub>When the options `all to one (all to reference)` and `parametric` are selected, repDilPCR will first evaluate the number of experimental groups and whether variance is homogenous among them by using Levene's test (the function `leveneTest` from the package `car`). If there are only two groups, an unpaired two-sided t-test will be performed. If Levene's test was not significant (p > 0.05), the variances of the two groups will be treated as equal and the pooled variance will be used by the t-test. If Levene's test was significant (p <= 0.05), Welch's approximation will be used. If there are more than two groups, ANOVA (analysis of variance) will be performed using the function `aov` if Levene's test was not significant or Welch's ANOVA using the function `oneway.test` will be performed in case Levene's test was significant (both ANOVA functions are from the package `stats`). If the p-value of the ANOVA test is lower than or equal to the chosen significance level (&alpha;, 0.05 by default), repDilPCR will perform a post-hoc test: Dunnett's multiple comparisons test with one control (if Levene's test was not significant) or Tamhane-Dunnett's multiple comparisons test with one control (if Levene's test was significant). The last two tests are performed by the functions `dunnettTest` and `tamhaneDunnettTest` from the package `PMCMRplus`, respectively. Post-hoc tests automatically take care of the multiple testing problem, so reported p-values don't need adjustment when considered at the level of a single plot (single gene of interest). If you have evaluated many genes of interest, you might need additional correction for multiple testing depending on your research question.</sub>
