@@ -187,6 +187,24 @@ These are some exemplary plots using the test data above:
 
 <sub>The functions `dunnettTest`, `tamhaneDunnettTest`, `kwManyOneDunnTest` and `tukeyTest` depend on a random number generator to perform their calculations which can lead to slightly different results when the same data is analyzed multiple times. In order to make repDilPCR return reproducible results when the same dataset is analyzed multiple times, the random number generator state is kept constant by using a hard-coded seed `set.seed(40075017)`.</sub>
 
+##### 5.2. Adjust the visual appearance of the plots to your needs
+Users can adjust the font size on plots by using the respective input box `Font size on text plots` in the control panel. Changing the preset number (9) will scale proportionately all different font sizes that occur on plots.
+
+Statistical significance can be denoted on plots with either numeric p-values or asterisks. The choice can be stated by selecting the respective radio button under `Display format of statistical significance on plots`. In the case of asterisks, their number corresponds to the significance level according to the following convention: * denotes 0.01 < p &lt; 0.05, ** denotes 0.001 < p &lt; 0.01, *** denotes 0.0001 < p &lt; 0.001, **** denotes p &lt; 0.0001.
+
+In the case of statistical tests comparing all possible pairs of experimental groups, the resulting plots might become overcrowded with significance bars. repDilPCR strives to distribute them in a way that they don't overlap each other and its algorithm works well in most cases. However, if there are a lot of experimental groups and a lot of the comparisons are significantly different, the automatic algorithm may fail to prevent overlapping of significance bars. Users can influence the algorithm by changing the spacing factor under `Distance between significance bars on plots`. Its default value is 1.5. Increasing this heuristic parameter will increase the distance between significance bars. Conversely, if the distances between significance bars are too big and they are wasting space on plots, you can try decreasing the spacing factor.
+
+#### 6. Download results
+All plots and tables that repDilPCR produces can be downloaded from the `Download results` tab. It has three subtabs: `Plots`, `Tables` and `Intermediate data`.
+
+The `Plots` subtab contains download buttons for plots of final results. They are organized into two subtabs: `Plots in linear scale` and `Plots in logarithmic scale`. Each of them will contain download buttons for different types of graphs: dot plots (all points), dot plots (means and confidence intervals), bar graphs and box plots. The exact types that will be available depend on the choice of statistical tests from the control panel (see 5.1.). All plots can be downloaded in the PDF or PNG file format. The available formats can be chosen by clicking on the respective radio button under `Format of graphical output (only for downloadable files)` in the control panel. PDF files will be multi-page, meaning that the plots for all genes of interest will be put together in a single file on separate pages. Each PNG file will contain a single plot (gene) but all plots of a particular type will be grouped together and downloaded as a ZIP archive. In all cases, downloaded files will have automatically created informative file names that will include the name of the data set (uploaded data file) and the plot type. Additionally, plots in logarithmic scale will have "log" in their file names. Plots in PDF files are stored as vector graphics and they are scalable without loss of resolution. PNG files use raster graphics and their resolution depends on the size of the image and the number of pixels. Users can specify these parameters in the control panel to get a PNG file that will conform to their requirements (or the requirements of a journal in which they intend to publish).
+
+The `Tables` subtab enables downloading of the final results as tables in CSV format. Four choices are possible: "relative expression values for each replicate (linear scale)",  "relative expression values for each replicate (logarithmic scale)", "mean expression values (linear scale)" and "mean expression values (logarithmic scale)".
+
+The `Intermediate data` subtab enables downloading of tables and plots created during the intermediate steps of the analysis: table of preprocessed input data including imputed Cq values (if any), table of calculated efficiencies for the different amplicons, plots of standard curves and Cq-Cq plots. The tables are in CSV format and the plots can be downloaded in PDF or PNG format depending on the selected settings (see above).
+
+
+
 
 ### Usage of the R script
 
