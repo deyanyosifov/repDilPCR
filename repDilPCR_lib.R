@@ -1,7 +1,7 @@
 ## Title: A Library of Functions Used by both the repDilPCR R Script and the repDilPCR Shiny App
 ## File name: repDilPCR_lib.R
-## Version: 1.0.2
-## Date: 2021-08-05
+## Version: 1.0.3
+## Date: 2021-08-09
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
@@ -9,7 +9,7 @@
 
 ## Variables
 # Mandatory
-# Cq.table <- c("/path/to/file.csv") ## Full path to the Cq-table
+# input.table <- c("/path/to/file.csv") ## Full path to the Cq-table
 # RG <- 3 ## Number of reference genes
 #
 # # Optional
@@ -82,7 +82,7 @@ png.plot.2 <- function(ggplot.object, fname, type.name, png.size, png.dpi) {
 
 
 ## Prepare data
-# qPCR <- read.csv(Cq.table, sep = ",", dec = ".", stringsAsFactors = TRUE) ## input data file name (insert it between the quotation marks)
+# qPCR <- read.csv(input.table, sep = ",", dec = ".", stringsAsFactors = TRUE) ## input data file name (insert it between the quotation marks)
 rd.preprocess <- function(qPCR, RG) {
   num.genes <- ncol(qPCR) - 3
   col.names <- colnames(qPCR)
@@ -117,7 +117,7 @@ for (i in ref.genes) {
   qPCR[names(a),i] <- a
 }
 return(qPCR)
-# write.csv(qPCR, file=paste0(gsub(".csv", "", Cq.table), "_with_imputed_missing_values.csv"))
+# write.csv(qPCR, file=paste0(gsub(".csv", "", input.table), "_with_imputed_missing_values.csv"))
 }
 
 ## Make a fictituous reference gene by averaging the Cq values of the real reference genes at each sample/dilution/replicate combination
@@ -158,7 +158,7 @@ rd.eff <- function (model.list, all.genes) {
   colnames(eff.df) <- c("Efficiency", "Lower bound of the 95% confidence interval", "Upper bound of the 95% confidence interval")
   return(eff.df)
 }
-# write.csv(eff.df, file=paste0(gsub(".csv", "", Cq.table), "_efficiency_table.csv"))
+# write.csv(eff.df, file=paste0(gsub(".csv", "", input.table), "_efficiency_table.csv"))
 
 
 ## Plot multiple regressions with separate regression curves but common slope
@@ -1388,14 +1388,14 @@ return(p5n.results)
 # confint.right <- paste0(" (upper bound of the ", (1-p)*100, "% confidence interval")
 # colnames(rel.q.detailed) <- gsub(".left.CI", confint.left, colnames(rel.q.detailed))
 # colnames(rel.q.detailed) <- gsub(".right.CI", confint.right, colnames(rel.q.detailed))
-rd.save.tables <- function(Cq.table, rel.q.detailed, rel.q.detailed.log, rel.q.mean, rel.q.mean.log, p) {
-write.csv(rel.q.detailed, paste0(gsub(".csv", "", Cq.table), "_relative_expression_replicates.csv"))
+rd.save.tables <- function(input.table, rel.q.detailed, rel.q.detailed.log, rel.q.mean, rel.q.mean.log, p) {
+write.csv(rel.q.detailed, paste0(gsub(".csv", "", input.table), "_relative_expression_replicates.csv"))
 colnames(rel.q.detailed.log) <- gsub("$", " (log2)", colnames(rel.q.detailed.log))
-write.csv(rel.q.detailed.log, paste0(gsub(".csv", "", Cq.table), "_relative_log_expression_replicates.csv"))
+write.csv(rel.q.detailed.log, paste0(gsub(".csv", "", input.table), "_relative_log_expression_replicates.csv"))
 colnames(rel.q.mean) <- c("Genes", "Samples", "Pairs", "Replicates", "Relative expression", paste0("Lower bound of the ", (1-p)*100, "% confidence interval"), paste0("Upper bound of the ", (1-p)*100, "% confidence interval"))
-write.csv(rel.q.mean[,1:7], paste0(gsub(".csv", "", Cq.table), "_relative_expression_averaged.csv"), row.names = FALSE)
+write.csv(rel.q.mean[,1:7], paste0(gsub(".csv", "", input.table), "_relative_expression_averaged.csv"), row.names = FALSE)
 colnames(rel.q.mean.log) <- c("Genes", "Samples", "Pairs", "log2(relative expression)", "Standard deviation", paste0("Lower bound of the ", (1-p)*100, "% confidence interval"), paste0("Upper bound of the ", (1-p)*100, "% confidence interval"))
-write.csv(rel.q.mean.log[,1:7], paste0(gsub(".csv", "", Cq.table), "_relative_log_expression_averaged.csv"), row.names = FALSE)
+write.csv(rel.q.mean.log[,1:7], paste0(gsub(".csv", "", input.table), "_relative_log_expression_averaged.csv"), row.names = FALSE)
 save.tables <- list("rel.q.detailed.log" = rel.q.detailed.log, "rel.q.mean" = rel.q.mean[,1:7], "rel.q.mean.log" = rel.q.mean.log[,1:7])
 return(save.tables)
 }

@@ -1,7 +1,7 @@
 ## Title: repDilPCR - a Shiny App to Analyze qPCR Data by the Dilution-replicate Method
 ## File name: app.R
-## Version: 1.0.2
-## Date: 2021-06-10
+## Version: 1.0.3
+## Date: 2021-08-09
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
@@ -25,7 +25,7 @@ ui <- fluidPage(
 
       hr(style = "border-top: lpx solid #c0c0c0;"),
 
-      fileInput(inputId = "Cq.table", label = h3("Upload your raw data as a .csv file", accept = ".csv")),
+      fileInput(inputId = "input.table", label = h3("Upload your raw data as a .csv file", accept = ".csv")),
 
       numericInput("RG",
                    h3("Number of reference genes"),
@@ -210,7 +210,7 @@ server <- function(input, output, session) {
 
   # Prepare data ----
   inp.data <- reactive({
-    file <- input$Cq.table
+    file <- input$input.table
     ext <- tools::file_ext(file$datapath)
     req(file)
     validate(need(ext == "csv", "Please upload a csv file"))
@@ -237,7 +237,7 @@ server <- function(input, output, session) {
     inp.data()$qPCR
   })
 
-  # restart.session <- eventReactive(input$Cq.table, {input$analyze <- 0}
+  # restart.session <- eventReactive(input$input.table, {input$analyze <- 0}
   # )
   #
   # output$fd <- renderText({
@@ -606,7 +606,7 @@ server <- function(input, output, session) {
   observeEvent(qPCR.NF(), {
   output$download.qPCR1 <- downloadHandler(
     filename = function() {
-      paste0(gsub(".csv", "", input$Cq.table), "_with_imputed_missing_values.csv")
+      paste0(gsub(".csv", "", input$input.table), "_with_imputed_missing_values.csv")
     },
     content = function(file) {
       if (input$analyze > 0) {
@@ -619,19 +619,19 @@ server <- function(input, output, session) {
   }, ignoreNULL = FALSE)
 
   output$download.qPCR <- renderUI({
-    req(input$Cq.table, qPCR())
+    req(input$input.table, qPCR())
     downloadButton("download.qPCR1", "Download table with imputed Cq values (if any)")
   })
 
   output$download.qPCR.b <- renderUI({
-    req(input$Cq.table, qPCR())
+    req(input$input.table, qPCR())
     h6("")
     helpText("Download may start a few seconds after pressing the respective button.")
   })
 
 
   output$download.qPCR.c <- renderUI({
-    req(input$Cq.table, qPCR())
+    req(input$input.table, qPCR())
     h6("")
     helpText("This is a table of preprocessed input data,
                     including imputed missing Cq values of reference genes
@@ -650,7 +650,7 @@ server <- function(input, output, session) {
   # Downloadable csv of calculated reaction efficiencies ----
   output$download.eff.df1 <- downloadHandler(
     filename = function() {
-      paste0(gsub(".csv", "", input$Cq.table), "_efficiency_table.csv")
+      paste0(gsub(".csv", "", input$input.table), "_efficiency_table.csv")
     },
     content = function(file) {
       write.csv(eff.df(), file)
@@ -658,7 +658,7 @@ server <- function(input, output, session) {
   )
 
   output$download.eff.df <- renderUI({
-    req(input$Cq.table, eff.df())
+    req(input$input.table, eff.df())
     downloadButton("download.eff.df1", "Download table with calculated efficiencies")
   })
 
@@ -666,7 +666,7 @@ server <- function(input, output, session) {
   output$download.stand.curves1 <- downloadHandler(
     if (input$plot.format == "PDF" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_standard_curves.pdf")
+        paste0(gsub(".csv", "", input$input.table), "_standard_curves.pdf")
       }
     },
     if (input$plot.format == "PDF" | input$plot.format == "both") {
@@ -678,7 +678,7 @@ server <- function(input, output, session) {
 
   output$download.stand.curves <- renderUI({
     if (input$plot.format == "PDF" | input$plot.format == "both") {
-      req(input$Cq.table, stand.curves.output()$ml)
+      req(input$input.table, stand.curves.output()$ml)
       downloadButton("download.stand.curves1", "Download standard curves (PDF)")
     }
   })
@@ -687,12 +687,12 @@ server <- function(input, output, session) {
   output$download.stand.curves2 <- downloadHandler(
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_standard_curves.zip")
+        paste0(gsub(".csv", "", input$input.table), "_standard_curves.zip")
       }
     },
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       content = function(file) {
-        fs <- png.plot.1(ggplot.object = stand.curves.output()$stand.curves, fname = input$Cq.table$name, type.name = "standard_curves", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
+        fs <- png.plot.1(ggplot.object = stand.curves.output()$stand.curves, fname = input$input.table$name, type.name = "standard_curves", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
         zip(zipfile = file, files = fs, flags = "-j")
       }
     }, contentType = "application/zip"
@@ -700,7 +700,7 @@ server <- function(input, output, session) {
 
   output$download.stand.curves.zip <- renderUI({
     if (input$plot.format == "PNG" | input$plot.format == "both") {
-      req(input$Cq.table, stand.curves.output()$stand.curves)
+      req(input$input.table, stand.curves.output()$stand.curves)
       downloadButton("download.stand.curves2", "Download standard curves (ZIP archive of PNG files)")
     }
   })
@@ -709,7 +709,7 @@ server <- function(input, output, session) {
   output$download.Cq.plots1 <- downloadHandler(
     if (input$plot.format == "PDF" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_Cq-Cq_plots.pdf")
+        paste0(gsub(".csv", "", input$input.table), "_Cq-Cq_plots.pdf")
       }
     },
     if (input$plot.format == "PDF" | input$plot.format == "both") {
@@ -721,7 +721,7 @@ server <- function(input, output, session) {
 
   output$download.Cq.plots <- renderUI({
     if (input$plot.format == "PDF" | input$plot.format == "both") {
-      req(input$Cq.table, Cq.plots.output()$ml)
+      req(input$input.table, Cq.plots.output()$ml)
       downloadButton("download.Cq.plots1", "Download Cq-Cq plots (PDF)")
     }
   })
@@ -730,12 +730,12 @@ server <- function(input, output, session) {
   output$download.Cq.plots2 <- downloadHandler(
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_Cq-Cq_plots.zip")
+        paste0(gsub(".csv", "", input$input.table), "_Cq-Cq_plots.zip")
       }
     },
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       content = function(file) {
-        fs <- png.plot.1(ggplot.object = Cq.plots.output()$Cq.plots, fname = input$Cq.table$name, type.name = "Cq-Cq_plots", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
+        fs <- png.plot.1(ggplot.object = Cq.plots.output()$Cq.plots, fname = input$input.table$name, type.name = "Cq-Cq_plots", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
         zip(zipfile = file, files = fs, flags = "-j")
       }
     }, contentType = "application/zip"
@@ -743,7 +743,7 @@ server <- function(input, output, session) {
 
   output$download.Cq.plots.zip <- renderUI({
     if (input$plot.format == "PNG" | input$plot.format == "both") {
-      req(input$Cq.table, Cq.plots.output()$Cq.plots)
+      req(input$input.table, Cq.plots.output()$Cq.plots)
       downloadButton("download.Cq.plots2", "Download Cq-Cq plots (ZIP archive of PNG files)")
     }
   })
@@ -773,7 +773,7 @@ server <- function(input, output, session) {
 
   output$download.p1.c <- renderUI({
     if (input$plot.format == "PDF" | input$plot.format == "PNG" | input$plot.format == "both") {
-      req(input$Cq.table, p1.results())
+      req(input$input.table, p1.results())
       h6("")
       helpText("Download may start a few seconds after pressing the respective button.")
     }
@@ -785,7 +785,7 @@ server <- function(input, output, session) {
   output$download.p1t <- downloadHandler(
     if (input$plot.format == "PDF" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_expression_dotplot.pdf")
+        paste0(gsub(".csv", "", input$input.table), "_relative_expression_dotplot.pdf")
       }
     },
     if (input$plot.format == "PDF" | input$plot.format == "both") {
@@ -797,7 +797,7 @@ server <- function(input, output, session) {
 
   output$download.p1 <- renderUI({
     if (input$plot.format == "PDF" | input$plot.format == "both") {
-      req(input$Cq.table, p1.results()$ml)
+      req(input$input.table, p1.results()$ml)
       downloadButton("download.p1t", "Download dot plots (all points) in linear scale (PDF)")
     }
   })
@@ -806,7 +806,7 @@ server <- function(input, output, session) {
   output$download.p2t <- downloadHandler(
     if (input$plot.format == "PDF" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_expression_dotplot_CI.pdf")
+        paste0(gsub(".csv", "", input$input.table), "_relative_expression_dotplot_CI.pdf")
       }
     },
     if (input$plot.format == "PDF" | input$plot.format == "both") {
@@ -818,7 +818,7 @@ server <- function(input, output, session) {
 
   output$download.p2 <- renderUI({
     if (input$plot.format == "PDF" | input$plot.format == "both") {
-      req(input$Cq.table, p2.results()$ml)
+      req(input$input.table, p2.results()$ml)
       downloadButton("download.p2t", "Download dot plots (means and confidence intervals) in linear scale (PDF)")
     }
   })
@@ -826,7 +826,7 @@ server <- function(input, output, session) {
   output$download.p3t <- downloadHandler(
     if (input$plot.format == "PDF" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_expression_bar_graph.pdf")
+        paste0(gsub(".csv", "", input$input.table), "_relative_expression_bar_graph.pdf")
       }
     },
     if (input$plot.format == "PDF" | input$plot.format == "both") {
@@ -838,7 +838,7 @@ server <- function(input, output, session) {
 
   output$download.p3 <- renderUI({
     if (input$plot.format == "PDF" | input$plot.format == "both") {
-      req(input$Cq.table, p3.results()$ml)
+      req(input$input.table, p3.results()$ml)
       downloadButton("download.p3t", "Download bar graphs in linear scale (PDF)")
     }
   })
@@ -846,7 +846,7 @@ server <- function(input, output, session) {
   output$download.p2nt <- downloadHandler(
     if (input$plot.format == "PDF" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_expression_boxplot.pdf")
+        paste0(gsub(".csv", "", input$input.table), "_relative_expression_boxplot.pdf")
       }
     },
     if (input$plot.format == "PDF" | input$plot.format == "both") {
@@ -858,7 +858,7 @@ server <- function(input, output, session) {
 
   output$download.p2n <- renderUI({
     if (input$plot.format == "PDF" | input$plot.format == "both") {
-      req(input$Cq.table, p2n.results()$ml)
+      req(input$input.table, p2n.results()$ml)
       downloadButton("download.p2nt", "Download box plots in linear scale (PDF)")
     }
   })
@@ -868,12 +868,12 @@ server <- function(input, output, session) {
   output$download.p1z <- downloadHandler(
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_expression_dotplot.zip")
+        paste0(gsub(".csv", "", input$input.table), "_relative_expression_dotplot.zip")
       }
     },
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       content = function(file) {
-        fs <- png.plot.2(ggplot.object = p1.results()$p1, fname = input$Cq.table$name, type.name = "relative_expression_dotplot", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
+        fs <- png.plot.2(ggplot.object = p1.results()$p1, fname = input$input.table$name, type.name = "relative_expression_dotplot", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
         zip(zipfile = file, files = fs, flags = "-j")
       }
     }, contentType = "application/zip"
@@ -881,7 +881,7 @@ server <- function(input, output, session) {
 
   output$download.p1.zip <- renderUI({
     if (input$plot.format == "PNG" | input$plot.format == "both") {
-      req(input$Cq.table, p1.results()$p1)
+      req(input$input.table, p1.results()$p1)
       downloadButton("download.p1z", "Download dot plots (all points) in linear scale (ZIP archive of PNG files)")
     }
   })
@@ -889,12 +889,12 @@ server <- function(input, output, session) {
   output$download.p2z <- downloadHandler(
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_expression_dotplot_CI.zip")
+        paste0(gsub(".csv", "", input$input.table), "_relative_expression_dotplot_CI.zip")
       }
     },
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       content = function(file) {
-        fs <- png.plot.2(ggplot.object = p2.results()$p2, fname = input$Cq.table$name, type.name = "relative_expression_dotplot_CI", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
+        fs <- png.plot.2(ggplot.object = p2.results()$p2, fname = input$input.table$name, type.name = "relative_expression_dotplot_CI", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
         zip(zipfile = file, files = fs, flags = "-j")
       }
     }, contentType = "application/zip"
@@ -902,7 +902,7 @@ server <- function(input, output, session) {
 
   output$download.p2.zip <- renderUI({
     if (input$plot.format == "PNG" | input$plot.format == "both") {
-      req(input$Cq.table, p2.results()$p2)
+      req(input$input.table, p2.results()$p2)
       downloadButton("download.p2z", "Download dot plots (means and confidence intervals) in linear scale (ZIP archive of PNG files)")
     }
   })
@@ -910,12 +910,12 @@ server <- function(input, output, session) {
   output$download.p3z <- downloadHandler(
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_expression_bar_graph.zip")
+        paste0(gsub(".csv", "", input$input.table), "_relative_expression_bar_graph.zip")
       }
     },
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       content = function(file) {
-        fs <- png.plot.2(ggplot.object = p3.results()$p3, fname = input$Cq.table$name, type.name = "relative_expression_bar_graph", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
+        fs <- png.plot.2(ggplot.object = p3.results()$p3, fname = input$input.table$name, type.name = "relative_expression_bar_graph", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
         zip(zipfile = file, files = fs, flags = "-j")
       }
     }, contentType = "application/zip"
@@ -923,7 +923,7 @@ server <- function(input, output, session) {
 
   output$download.p3.zip <- renderUI({
     if (input$plot.format == "PNG" | input$plot.format == "both") {
-      req(input$Cq.table, p3.results()$p3)
+      req(input$input.table, p3.results()$p3)
       downloadButton("download.p3z", "Download bar graphs in linear scale (ZIP archive of PNG files)")
     }
   })
@@ -931,12 +931,12 @@ server <- function(input, output, session) {
   output$download.p2nz <- downloadHandler(
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_expression_boxplot.zip")
+        paste0(gsub(".csv", "", input$input.table), "_relative_expression_boxplot.zip")
       }
     },
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       content = function(file) {
-        fs <- png.plot.2(ggplot.object = p2n.results()$p2n, fname = input$Cq.table$name, type.name = "relative_expression_boxplot", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
+        fs <- png.plot.2(ggplot.object = p2n.results()$p2n, fname = input$input.table$name, type.name = "relative_expression_boxplot", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
         zip(zipfile = file, files = fs, flags = "-j")
       }
     }, contentType = "application/zip"
@@ -944,7 +944,7 @@ server <- function(input, output, session) {
 
   output$download.p2n.zip <- renderUI({
     if (input$plot.format == "PNG" | input$plot.format == "both") {
-      req(input$Cq.table, p2n.results()$p2n)
+      req(input$input.table, p2n.results()$p2n)
       downloadButton("download.p2nz", "Download box plots in linear scale (ZIP archive of PNG files)")
     }
   })
@@ -974,7 +974,7 @@ server <- function(input, output, session) {
 
   output$download.p4.c <- renderUI({
     if (input$plot.format == "PDF" | input$plot.format == "PNG" | input$plot.format == "both") {
-      req(input$Cq.table, p4.results())
+      req(input$input.table, p4.results())
       h6("")
       helpText("Download may start a few seconds after pressing the respective button.")
     }
@@ -986,7 +986,7 @@ server <- function(input, output, session) {
   output$download.p4t <- downloadHandler(
     if (input$plot.format == "PDF" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_log_expression_dotplot.pdf")
+        paste0(gsub(".csv", "", input$input.table), "_relative_log_expression_dotplot.pdf")
       }
     },
     if (input$plot.format == "PDF" | input$plot.format == "both") {
@@ -998,7 +998,7 @@ server <- function(input, output, session) {
 
   output$download.p4 <- renderUI({
     if (input$plot.format == "PDF" | input$plot.format == "both") {
-      req(input$Cq.table, p4.results()$ml)
+      req(input$input.table, p4.results()$ml)
       downloadButton("download.p4t", "Download dot plots (all points) in logarithmic scale (PDF)")
     }
   })
@@ -1007,7 +1007,7 @@ server <- function(input, output, session) {
   output$download.p5t <- downloadHandler(
     if (input$plot.format == "PDF" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_log_expression_dotplot_SD.pdf")
+        paste0(gsub(".csv", "", input$input.table), "_relative_log_expression_dotplot_SD.pdf")
       }
     },
     if (input$plot.format == "PDF" | input$plot.format == "both") {
@@ -1019,7 +1019,7 @@ server <- function(input, output, session) {
 
   output$download.p5 <- renderUI({
     if (input$plot.format == "PDF" | input$plot.format == "both") {
-      req(input$Cq.table, p5.results()$ml)
+      req(input$input.table, p5.results()$ml)
       downloadButton("download.p5t", "Download dot plots (means and standard deviations) in logarithmic scale (PDF)")
     }
   })
@@ -1027,7 +1027,7 @@ server <- function(input, output, session) {
   output$download.p6t <- downloadHandler(
     if (input$plot.format == "PDF" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_log_expression_bar_graph.pdf")
+        paste0(gsub(".csv", "", input$input.table), "_relative_log_expression_bar_graph.pdf")
       }
     },
     if (input$plot.format == "PDF" | input$plot.format == "both") {
@@ -1039,7 +1039,7 @@ server <- function(input, output, session) {
 
   output$download.p6 <- renderUI({
     if (input$plot.format == "PDF" | input$plot.format == "both") {
-      req(input$Cq.table, p6.results()$ml)
+      req(input$input.table, p6.results()$ml)
       downloadButton("download.p6t", "Download bar graphs in logarithmic scale (PDF)")
     }
   })
@@ -1047,7 +1047,7 @@ server <- function(input, output, session) {
   output$download.p5nt <- downloadHandler(
     if (input$plot.format == "PDF" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_log_expression_boxplot.pdf")
+        paste0(gsub(".csv", "", input$input.table), "_relative_log_expression_boxplot.pdf")
       }
     },
     if (input$plot.format == "PDF" | input$plot.format == "both") {
@@ -1059,7 +1059,7 @@ server <- function(input, output, session) {
 
   output$download.p5n <- renderUI({
     if (input$plot.format == "PDF" | input$plot.format == "both") {
-      req(input$Cq.table, p5n.results()$ml)
+      req(input$input.table, p5n.results()$ml)
       downloadButton("download.p5nt", "Download box plots in logarithmic scale (PDF)")
     }
   })
@@ -1068,12 +1068,12 @@ server <- function(input, output, session) {
   output$download.p4z <- downloadHandler(
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_log_expression_dotplot.zip")
+        paste0(gsub(".csv", "", input$input.table), "_relative_log_expression_dotplot.zip")
       }
     },
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       content = function(file) {
-        fs <- png.plot.2(ggplot.object = p4.results()$p4, fname = input$Cq.table$name, type.name = "relative_log_expression_dotplot", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
+        fs <- png.plot.2(ggplot.object = p4.results()$p4, fname = input$input.table$name, type.name = "relative_log_expression_dotplot", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
         zip(zipfile = file, files = fs, flags = "-j")
       }
     }, contentType = "application/zip"
@@ -1081,7 +1081,7 @@ server <- function(input, output, session) {
 
   output$download.p4.zip <- renderUI({
     if (input$plot.format == "PNG" | input$plot.format == "both") {
-      req(input$Cq.table, p4.results()$p4)
+      req(input$input.table, p4.results()$p4)
       downloadButton("download.p4z", "Download dot plots (all points) in logarithmic scale (ZIP archive of PNG files)")
     }
   })
@@ -1089,12 +1089,12 @@ server <- function(input, output, session) {
   output$download.p5z <- downloadHandler(
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_log_expression_dotplot_SD.zip")
+        paste0(gsub(".csv", "", input$input.table), "_relative_log_expression_dotplot_SD.zip")
       }
     },
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       content = function(file) {
-        fs <- png.plot.2(ggplot.object = p5.results()$p5, fname = input$Cq.table$name, type.name = "relative_log_expression_dotplot_SD", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
+        fs <- png.plot.2(ggplot.object = p5.results()$p5, fname = input$input.table$name, type.name = "relative_log_expression_dotplot_SD", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
         zip(zipfile = file, files = fs, flags = "-j")
       }
     }, contentType = "application/zip"
@@ -1102,7 +1102,7 @@ server <- function(input, output, session) {
 
   output$download.p5.zip <- renderUI({
     if (input$plot.format == "PNG" | input$plot.format == "both") {
-      req(input$Cq.table, p5.results()$p5)
+      req(input$input.table, p5.results()$p5)
       downloadButton("download.p5z", "Download dot plots (means and standard deviations) in logarithmic scale (ZIP archive of PNG files)")
     }
   })
@@ -1110,12 +1110,12 @@ server <- function(input, output, session) {
   output$download.p6z <- downloadHandler(
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_log_expression_bar_graph.zip")
+        paste0(gsub(".csv", "", input$input.table), "_relative_log_expression_bar_graph.zip")
       }
     },
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       content = function(file) {
-        fs <- png.plot.2(ggplot.object = p6.results()$p6, fname = input$Cq.table$name, type.name = "relative_log_expression_bar_graph", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
+        fs <- png.plot.2(ggplot.object = p6.results()$p6, fname = input$input.table$name, type.name = "relative_log_expression_bar_graph", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
         zip(zipfile = file, files = fs, flags = "-j")
       }
     }, contentType = "application/zip"
@@ -1123,7 +1123,7 @@ server <- function(input, output, session) {
 
   output$download.p6.zip <- renderUI({
     if (input$plot.format == "PNG" | input$plot.format == "both") {
-      req(input$Cq.table, p6.results()$p6)
+      req(input$input.table, p6.results()$p6)
       downloadButton("download.p6z", "Download bar graphs in logarithmic scale (ZIP archive of PNG files)")
     }
   })
@@ -1131,12 +1131,12 @@ server <- function(input, output, session) {
   output$download.p5nz <- downloadHandler(
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       filename = function() {
-        paste0(gsub(".csv", "", input$Cq.table), "_relative_log_expression_boxplot.zip")
+        paste0(gsub(".csv", "", input$input.table), "_relative_log_expression_boxplot.zip")
       }
     },
     if (input$plot.format == "PNG" | input$plot.format == "both") {
       content = function(file) {
-        fs <- png.plot.2(ggplot.object = p5n.results()$p5n, fname = input$Cq.table$name, type.name = "relative_log_expression_boxplot", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
+        fs <- png.plot.2(ggplot.object = p5n.results()$p5n, fname = input$input.table$name, type.name = "relative_log_expression_boxplot", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
         zip(zipfile = file, files = fs, flags = "-j")
       }
     }, contentType = "application/zip"
@@ -1144,18 +1144,18 @@ server <- function(input, output, session) {
 
   output$download.p5n.zip <- renderUI({
     if (input$plot.format == "PNG" | input$plot.format == "both") {
-      req(input$Cq.table, p5n.results()$p5n)
+      req(input$input.table, p5n.results()$p5n)
       downloadButton("download.p5nz", "Download box plots in logarithmic scale (ZIP archive of PNG files)")
     }
   })
 
   ## Downloadable tables of results ----
   save.tables <- reactive({
-    rd.save.tables(Cq.table = input$Cq.table$name, rel.q.detailed = rel.q.norm.results()$rel.q.detailed, rel.q.detailed.log = rel.q.norm.results()$rel.q.detailed.log, rel.q.mean = statistics.results()$rel.q.mean, rel.q.mean.log = statistics.results()$rel.q.mean.log, p = input$p)
+    rd.save.tables(input.table = input$input.table$name, rel.q.detailed = rel.q.norm.results()$rel.q.detailed, rel.q.detailed.log = rel.q.norm.results()$rel.q.detailed.log, rel.q.mean = statistics.results()$rel.q.mean, rel.q.mean.log = statistics.results()$rel.q.mean.log, p = input$p)
   })
 
   output$download.rel.q.detailed.c <- renderUI({
-    req(input$Cq.table, rel.q.norm.results())
+    req(input$input.table, rel.q.norm.results())
     h6("")
     helpText("Download may start a few seconds after pressing the respective button.")
   })
@@ -1163,7 +1163,7 @@ server <- function(input, output, session) {
   # Downloadable csv of calculated relative expression values for each replicate ----
   output$download.rel.q.detailed1 <- downloadHandler(
     filename = function() {
-      paste0(gsub(".csv", "", input$Cq.table), "_relative_expression_replicates.csv")
+      paste0(gsub(".csv", "", input$input.table), "_relative_expression_replicates.csv")
     },
     content = function(file) {
       write.csv(rel.q.norm.results()$rel.q.detailed, file)
@@ -1171,7 +1171,7 @@ server <- function(input, output, session) {
   )
 
   output$download.rel.q.detailed <- renderUI({
-    req(input$Cq.table, rel.q.norm.results()$rel.q.detailed, save.tables())
+    req(input$input.table, rel.q.norm.results()$rel.q.detailed, save.tables())
     downloadButton("download.rel.q.detailed1", "Download table with calculated relative expression values for each replicate (linear scale)")
   })
 
@@ -1179,7 +1179,7 @@ server <- function(input, output, session) {
   # Downloadable csv of calculated logarithmic relative expression values for each replicate ----
   output$download.rel.q.detailed.log1 <- downloadHandler(
     filename = function() {
-      paste0(gsub(".csv", "", input$Cq.table), "_relative_log_expression_replicates.csv")
+      paste0(gsub(".csv", "", input$input.table), "_relative_log_expression_replicates.csv")
     },
     content = function(file) {
       write.csv(save.tables()$rel.q.detailed.log, file)
@@ -1187,14 +1187,14 @@ server <- function(input, output, session) {
   )
 
   output$download.rel.q.detailed.log <- renderUI({
-    req(input$Cq.table, save.tables()$rel.q.detailed.log)
+    req(input$input.table, save.tables()$rel.q.detailed.log)
     downloadButton("download.rel.q.detailed.log1", "Download table with calculated relative expression values for each replicate (logarithmic scale)")
   })
 
   # Downloadable csv of calculated mean relative expression values ----
   output$download.rel.q.mean1 <- downloadHandler(
     filename = function() {
-      paste0(gsub(".csv", "", input$Cq.table), "_relative_expression_averaged.csv")
+      paste0(gsub(".csv", "", input$input.table), "_relative_expression_averaged.csv")
     },
     content = function(file) {
       write.csv(save.tables()$rel.q.mean, file, row.names = FALSE)
@@ -1202,14 +1202,14 @@ server <- function(input, output, session) {
   )
 
   output$download.rel.q.mean <- renderUI({
-    req(input$Cq.table, save.tables()$rel.q.mean, )
+    req(input$input.table, save.tables()$rel.q.mean, )
     downloadButton("download.rel.q.mean1", "Download table with calculated relative mean expression values (linear scale)")
   })
 
   # Downloadable csv of calculated mean logarithmic relative expression values ----
   output$download.rel.q.mean.log1 <- downloadHandler(
     filename = function() {
-      paste0(gsub(".csv", "", input$Cq.table), "_relative_log_expression_averaged.csv")
+      paste0(gsub(".csv", "", input$input.table), "_relative_log_expression_averaged.csv")
     },
     content = function(file) {
       write.csv(save.tables()$rel.q.mean.log, file, row.names = FALSE)
@@ -1217,7 +1217,7 @@ server <- function(input, output, session) {
   )
 
   output$download.rel.q.mean.log <- renderUI({
-    req(input$Cq.table, save.tables()$rel.q.mean.log)
+    req(input$input.table, save.tables()$rel.q.mean.log)
     downloadButton("download.rel.q.mean.log1", "Download table with calculated relative mean expression values (logarithmic scale)")
   })
 
@@ -1274,7 +1274,7 @@ server <- function(input, output, session) {
 
   ## Remove temporary files if any
   session$onSessionEnded(function() {
-    delfil <- isolate(gsub(".{4}$", "*", input$Cq.table$name))
+    delfil <- isolate(gsub(".{4}$", "*", input$input.table$name))
     if (length(Sys.glob(delfil)) != 0) {
       if (file.exists(Sys.glob(delfil))) {
         delfil.list <- Sys.glob(delfil)
@@ -1288,8 +1288,8 @@ server <- function(input, output, session) {
     # delfil
   # inp.data()$qPCR
   # rel.q.results()$rel.q.mean
-  # #   gsub(".csv", "*", input$Cq.table$name)
-  # #   # png.plot.2(ggplot.object = p1.results()$p1, fname = input$Cq.table$name, type.name = "relative_expression_dotplot", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
+  # #   gsub(".csv", "*", input$input.table$name)
+  # #   # png.plot.2(ggplot.object = p1.results()$p1, fname = input$input.table$name, type.name = "relative_expression_dotplot", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
     # })
 
 
