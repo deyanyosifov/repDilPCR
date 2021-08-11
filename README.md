@@ -249,17 +249,17 @@ The dilution-replicate method is based on so called dilution replicates. They se
 
 *Are standard curves with only 3 dilution points reliable enough to estimate the efficiency of the reaction?*
 
-Although each individual standard curve would be based on only 3 dilutions, the multiple linear regression with parallel slopes would be based on the dilution points of all samples. As the slope is constrained, it effectively acts like an extra point in each sample. The degrees of freedom for the fit are given by the formula [(dilution points − 1) × (number of samples) − 1]. Thus, the more the samples, the better the precision. See the original publication of the method for more information ((Kwokyin Hui & Zhong-Ping Feng. Efficient experimental design and analysis of real-time PCR assays. Channels 2013, 7:3, 160-170, https://doi.org/10.4161/chan.24024)).
+Although each individual standard curve would be based on only 3 dilutions, the multiple linear regression with parallel slopes would be based on the dilution points of all samples. As the slope is constrained, it effectively acts like an extra point in each sample. The degrees of freedom for the fit are given by the formula [(dilution points − 1) × (number of samples) − 1]. Thus, the more the samples, the better the precision. See the original publication of the method for more information (Kwokyin Hui & Zhong-Ping Feng. Efficient experimental design and analysis of real-time PCR assays. Channels 2013, 7:3, 160-170, https://doi.org/10.4161/chan.24024).
 
 *Do the error bars on plots reflect technical variance, biological variance or both?*
 
-Technical variance in a qPCR experiment is usually much lower than variance between biological replicates and repDilPCR simply ignores it when calculating the variance in samples or experimental groups. You will see error bars only if you had biological replicates in your experiment (see "Preparation of the data" for information on how to name biological replicates so that the program will recognize them as such). You can get an impression of the technical variance by looking at the standard curves plots and the statistics below them (see the previous question). If you are specifically interested in determining technical variance with the method, you should perform replicates of the whole dilution series for each sample, which replicates you can name according to the convention for biological replicates (see "Preparation of the data").
+Technical variance in a qPCR experiment is usually much smaller than variance between biological replicates and repDilPCR simply ignores it when calculating the variance in samples or experimental groups. You will see error bars only if you had biological replicates in your experiment (see "Preparation of the data" for information on how to name biological replicates so that the program will recognize them as such). You can get an impression of the technical variance by looking at the standard curves plots and the statistics below them (see the previous question). If you are specifically interested in determining technical variance with the method, you should perform replicates of the whole dilution series for each sample, which replicates you can name according to the convention for biological replicates (see "Preparation of the data").
 
 *What do the error bars show? I see they are sometimes not symmetric, is this an error?*
 
 For plots in logarithmic scale, the error bars denote the standard deviations and are symmetric. For plots in linear scale, the error bars show the 1-&alpha; confidence intervals (the default value of &alpha; is 0.05, so by default you will get 95%-confidence intervals). Confidence intervals are calculated from standard deviations in logarithmic scale and then converted to the linear scale. It is perfectly normal if they look asymmetric around the mean value.
 
-*Why so complicated? Can't error bars show standard deviation also on plots in linear scale?*
+*Why so complicated? Can't error bars depict standard deviation also on plots in linear scale?*
 
 qPCR data are not normally distributed in linear scale. In this case, showing confidence intervals is more informative.
 
@@ -273,7 +273,7 @@ No. A leading concept in the design of the program was to make it simple (but so
 
 *Significance bars on my plots overlap and p-values are unreadable. What can I do?*
 
-If there are a lot of experimental groups and a lot of the comparisons are significantly different, repDilPCR's algorithm may fail to prevent overlapping of significance bars. You can influence the algorithm by changing the spacing factor under `Distance between significance bars on plots` in the Shiny app (the equivalent variable in the R script is called `sign.repr`). Increasing it will increase the distance between significance bars. Conversely, if the distances between significance bars are too big and they are wasting space on plots, you can try decreasing the spacing factor.
+If there are a lot of experimental groups and a lot of the comparisons are significantly different, repDilPCR's algorithm may fail to prevent overlapping of significance bars. You can influence the algorithm by changing the spacing factor under `Distance between significance bars on plots` in the Shiny app (the equivalent variable in the R script is called `sign.repr`). Increasing it will increase the distance between significance bars. Conversely, if the distances between significance bars are too large and they are wasting space on plots, you can try decreasing the spacing factor.
 
 *Where does the name repDilPCR come from?*
 
