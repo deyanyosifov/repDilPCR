@@ -1418,8 +1418,3 @@ rd.warn <- function(ref.sample, rel.q.mean, noref.warn, statistics, posthoc, nos
     return(warnings)
   }
 }
-
-rd.delfil <- function(fname) {
-  delfil <- gsub(".csv", "_relative_expression_dotplot_miR.19a.png", fname)
-  file.remove(delfil)
-}
