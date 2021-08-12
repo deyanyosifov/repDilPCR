@@ -273,7 +273,7 @@ No. A leading concept in the design of the program was to make it simple (but so
 
 *Significance bars on my plots overlap and p-values are unreadable. What can I do?*
 
-If there are a lot of experimental groups and a lot of the comparisons are significantly different, repDilPCR's algorithm may fail to prevent overlapping of significance bars. You can influence the algorithm by changing the spacing factor under `Distance between significance bars on plots` in the Shiny app (the equivalent variable in the R script is called `sign.repr`). Increasing it will increase the distance between significance bars. Conversely, if the distances between significance bars are too large and they are wasting space on plots, you can try decreasing the spacing factor.
+If there are a lot of experimental groups and a lot of the comparisons are significantly different, repDilPCR's algorithm may fail to prevent overlapping of significance bars. You can influence the algorithm by changing the spacing factor under `Distance between significance bars on plots` in the Shiny app (the equivalent variable in the R script is called `sp.f`). Increasing it will increase the distance between significance bars. Conversely, if the distances between significance bars are too large and they are wasting space on plots, you can try decreasing the spacing factor.
 
 *Where does the name repDilPCR come from?*
 
