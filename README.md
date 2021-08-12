@@ -218,7 +218,7 @@ The optional variables are:
 * `statistics` - corresponds to `Test for statistically significant differences between samples or experimental groups` in the graphical interface. Set to `TRUE` (default) or `FALSE` to respectively enable or disable tests for statistical significance between samples or experimental groups.
 * `test.type` - corresponds to `Type of statistical test(s)` in the graphical interface (see point 5.1. in "Usage of the Shiny app"). Possible values: `"parametric"` (default) and `"non-parametric"`.
 * `posthoc` - corresponds to `Comparisons to test for statistically significant differences` in the graphical interface (see point 5.1. in "Usage of the Shiny app"). It specifies the comparisons to be tested for statistically significant differences. Possible values: `"all to one"` (default), `"all pairs"` and `"selected pairs"`.
-* `p` - corresponds to `Significance level (&alpha;)` in the graphical interface (see point 5.1. in "Usage of the Shiny app"). Default value: `0.05`.
+* `alpha` - corresponds to `Significance level (&alpha;)` in the graphical interface (see point 5.1. in "Usage of the Shiny app"). Default value: `0.05`.
 * `font.size` - corresponds to `Font size of text on plots` in the graphical interface (see point 5.2. in "Usage of the Shiny app"). Default value: `9`.
 * `sign.repr` - corresponds to `Display format of statistical significance on plots` in the graphical interface (see point 5.2. in "Usage of the Shiny app"). Possible values: `"values"` (default) and `"asterisks"`.
 * `sp.f` - corresponds to `Distance between significance bars on plots` in the graphical interface (see point 5.2. in "Usage of the Shiny app"). Default value: `1.5`.
