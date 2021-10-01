@@ -132,7 +132,7 @@ The standard curve plots will be listed one under the other in the following ord
 
 ![plot](./www/standard_curves.png)
 
-Efficiences can be downloaded as a table by navigating to `Download results / Intermediate data` and clicking on the `Download table with calculated efficiences` button. All standard curve plots can be downloaded as a PDF file or as a ZIP archive of PNG files by clicking on the respective download button. The file format can be changed by selecting the respective option at the bottom of the app control panel. In the case of the PNG format, one can also select the desired width, height and resolution.
+Efficiencies can be downloaded as a table by navigating to `Download results / Intermediate data` and clicking on the `Download table with calculated efficiences` button. All standard curve plots can be downloaded as a PDF file or as a ZIP archive of PNG files by clicking on the respective download button. The file format can be changed by selecting the respective option at the bottom of the app control panel. In the case of the PNG format, one can also select the desired width, height and resolution.
 
 The `Cq-Cq plots` subtab will include Cq-Cq plots for each gene of interest against the virtual reference gene. Again, each plot will consist of as many parallel regression lines as there are samples (biological replicates) and will have a statistical summary underneath, as for the standard curves plots. Similarly, Cq-Cq plots can be downloaded as a file from the `Download results / Intermediate data` subtab. This is what a typical Cq-Cq plot looks like:
 
@@ -188,7 +188,7 @@ These are some exemplary plots using the test data above:
 <sub>The functions `dunnettTest`, `tamhaneDunnettTest`, `kwManyOneDunnTest` and `tukeyTest` depend on a random number generator to perform their calculations which can lead to slightly different results when the same data is analyzed multiple times. In order to make repDilPCR return reproducible results when the same dataset is analyzed multiple times, the random number generator state is kept constant by using a hard-coded seed `set.seed(40075017)`.</sub>
 
 ##### 5.2. Adjust the visual appearance of the plots to your needs
-Users can adjust the font size on plots by using the respective input box `Font size on text plots` in the control panel. Changing the preset number (9) will scale proportionately all different font sizes that occur on plots.
+Users can adjust the font size on plots by using the respective input box `Font size of text on plots` in the control panel. Changing the preset number (9) will scale proportionately all different font sizes that occur on plots.
 
 Statistical significance can be denoted on plots with either numeric p-values or asterisks. The choice can be stated by selecting the respective radio button under `Display format of statistical significance on plots`. In the case of asterisks, their number corresponds to the significance level according to the following convention: * denotes 0.01 < p &le; 0.05, ** denotes 0.001 < p &le; 0.01, *** denotes 0.0001 < p &le; 0.001, **** denotes p &le; 0.0001.
 
@@ -232,6 +232,10 @@ After changing the variables as necessary, save the modified file and start the 
 * You can start R in a terminal and then enter the command `source("~/repDilPCR/repDilPCR.R")` (if repDilPCR is installed in a different directory on your computer, you will have to modify the path accordingly).
 
 It will take from a few seconds up to a minute for the script to execute depending on the speed of your computer, the size of the dataset, the selected parameters of the analysis and eventually the presence of missing Cq values of the reference genes. All results will be delivered in the directory containing the input dataset as long as the variable `input.table` has been set corrrectly.
+
+## Data protection policy of the Shiny app
+
+Data uploaded by the user to the Shiny app are stored on the server as temporary files only while being processed. All raw data, temporary intermediate files and end results are deleted from the server immediately after closing the user session. This applies also to the publicly accessible installation of repDilPCR that is hosted on a server at the German Cancer Research Center in Heidelberg, Germany (http://not-yet-available).
 
 ## Frequently asked questions
 
