@@ -35,7 +35,6 @@ ui <- fluidPage(
       h6(""), helpText("Do not use if your experiment does not contain replicates."),
       br(),
       actionButton("analyze", "Analyze", width = "100%", style="font-size:16pt; color: #fff; background-color: #5eba7d; border-color: #5e6600"),
-      # bsButton("analyze", "Analyze", style="primary", block = TRUE, size = "large", type = "toggle"),
       br(),
       h3("Optional parameters"),
       checkboxInput("statistics", "Test for statistically significant differences between samples or experimental groups", value = TRUE),
@@ -194,7 +193,6 @@ ui <- fluidPage(
                           h6(""),
                           uiOutput("download.test.data.precalc"),
                           h6(textOutput("count"), style="font-size:10pt; color: #fff"))
-        # tabPanel("Baustelle", tableOutput("bau"))
       )
     )
   )
@@ -202,11 +200,6 @@ ui <- fluidPage(
 
 # Server logic ----
 server <- function(input, output, session) {
-
-  # output$about <- renderText({
-  #   ""
-  # })
-  #
 
   # Prepare data ----
   inp.data <- reactive({
@@ -225,11 +218,6 @@ server <- function(input, output, session) {
       rd.preprocess.output <- rd.preprocess(inp.data, input$RG)
     } else {
       rd.preprocess.output <- rd.preprocess.2(inp.data)
-      # rownames(inp.data) <- inp.data$Replicates
-      # rd.preprocess.output <- list()
-      # rd.preprocess.output$qPCR <- inp.data
-      # preprocess.output$qPCR <- inp.data[,2:ncol(inp.data)]
-      # preprocess.output$GOIs <- colnames(preprocess.output$qPCR)[2:ncol(preprocess.output$qPCR)]
     }
   })
 
@@ -237,13 +225,6 @@ server <- function(input, output, session) {
     inp.data()$qPCR
   })
 
-  # restart.session <- eventReactive(input$input.table, {input$analyze <- 0}
-  # )
-  #
-  # output$fd <- renderText({
-  #   input$analyze
-  # })
-  #
   # Impute missing Cq values of reference genes ----
   qPCR <- reactive({
     if (colnames(inp.data()$qPCR)[3] == "Dilution" && input$impute == TRUE) {rd.impute(inp.data()$qPCR, inp.data()$ref.genes)} else {inp.data()$qPCR}
@@ -267,10 +248,6 @@ server <- function(input, output, session) {
   update.qPCR <- observeEvent(qPCR.NF(), {
     output$qPCR <- renderTable({qPCR.NF()})
   })
-
-  # output$fd <- renderText({
-  #   input$analyze
-  # })
 
   observe({
     if (colnames(inp.data()$qPCR)[3] != "Dilution") {
@@ -1555,8 +1532,6 @@ server <- function(input, output, session) {
       confirmButtonText = "OK",
       callbackJS = "function(y) {if(y == true) {location.reload();}}"
     )}
-    # imageUrl = "",
-    # animation = "slide-from-top"
   )
   
 
@@ -1588,16 +1563,6 @@ server <- function(input, output, session) {
       }
     }
   })
-
-  # output$bau <- renderTable({
-    # delfil
-  # inp.data()$qPCR
-  # rel.q.results()$rel.q.mean
-  # #   gsub(".csv", "*", input$input.table$name)
-  # #   # png.plot.2(ggplot.object = p1.results()$p1, fname = input$input.table$name, type.name = "relative_expression_dotplot", png.size = c(input$png.width, input$png.height), png.dpi = input$png_dpi)
-    # })
-
-
 
 }
 
