@@ -5,7 +5,7 @@
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
-## License: GNU Affero General Public License, https://www.gnu.org/licenses/agpl-3.0.html
+## License: GNU Affero General Public License v3, https://www.gnu.org/licenses/agpl-3.0.html
 
 source("repDilPCR_lib.R")
 library(shinycssloaders)
