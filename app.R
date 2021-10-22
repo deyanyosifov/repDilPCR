@@ -1229,7 +1229,7 @@ server <- function(input, output, session) {
     cc[1,1]
     }
   })
-
+  
   ## Pop-up window with terms of use
   shinyalert(
     title = "<h2 style='text-align:center;'><b>Data protection & Terms of Use / Datenschutzerklärung und Nutzungsbedingungen</b></h2>",
