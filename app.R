@@ -171,7 +171,7 @@ ui <- fluidPage(
                                      The program is inspired by the dilution-replicate approach for design and analysis of real-time PCR assays (Kwokyin Hui & Zhong-Ping Feng (2013)
                                      Efficient experimental design and analysis of real-time PCR assays, Channels, 7:3, 160-170, DOI: ", a("10.4161/chan.24024", href = "https://doi.org/10.4161/chan.24024"), ")."), style="font-size:12pt"),
                           h3(tagList("\u2003")),
-                          h3(tagList("Overview:"), style="font-size:12pt"),
+                          h3(tags$b("Overview"), style="font-size:12pt"),
                           h3(tagList("In a qPCR experiment, it is of key importance to determine the efficiency of the PCR reaction for each amplicon and primer pair for correct evaluation and interpretation of the data.
                                      Different approaches to determine efficiency have been developed, from the classical calibration curve-based method to sophisticated methods that rely on fitting
                                      linear or non-linear models on individual amplification curves. Occupying the middle ground between these two extremes is the dilution-replicate experimental
@@ -187,7 +187,7 @@ ui <- fluidPage(
                                      qPCR data (typically less than one minute from raw Cq values to publication-ready plots) and to help users with little knowledge of statistics to select and
                                      perform the appropriate statistical tests, at least in the case of one-factor experimental designs. At the same time, the program allows experienced users to
                                      export intermediate data and perform more sophisticated analyses with external statistical software, e.g. if two-way ANOVA is necessary."), style="font-size:12pt"),
-                          h3(tagList("Detailed user manual can be found ", a("here", href = "https://gitfront.io/r/deyanyosifov/c8e8e53b2f70690abb47d0847dabe55c31e73afd/repDilPCR/"), " (still in the process of writing). Potential users are advised to read the ", a("article", href = "https://doi.org/10.4161/chan.24024")," by Hui and Feng before setting up their experiment and using the program."), style="font-size:12pt"),
+                          h3(tagList("Detailed user manual can be found ", a("here", href = "https://gitfront.io/r/deyanyosifov/c8e8e53b2f70690abb47d0847dabe55c31e73afd/repDilPCR/"), ". New users of the dilution-replicate method are advised to read the ", a("article", href = "https://doi.org/10.4161/chan.24024")," by Hui and Feng before setting up their experiment and using the program."), style="font-size:12pt"),
                           h3(tagList("\u2003")),
                           uiOutput("download.test.data"),
                           h6(""),

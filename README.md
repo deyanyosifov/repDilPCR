@@ -1,18 +1,17 @@
 # repDilPCR
 
 <div align="justify">
-repDilPCR is a software tool to analyze qPCR data. It has been inspired by the efficient dilution-replicate design for real-time PCR assays by Hui and Feng (Kwokyin Hui & Zhong-Ping Feng. Efficient experimental design and analysis of real-time PCR assays. Channels 2013, 7:3, 160-170, https://doi.org/10.4161/chan.24024) and is the first tool to enable the analysis of experiments performed according to this design. The statistical and the graphical functions of the program can also be used with preprocessed data obtained by more conventional assay designs and evaluation methods.
+repDilPCR is a software tool to analyze qPCR data. It has been inspired by the efficient dilution-replicate design for real-time PCR assays by Hui and Feng (Kwokyin Hui & Zhong-Ping Feng. Efficient experimental design and analysis of real-time PCR assays. Channels 2013, 7:3, 160-170, https://doi.org/10.4161/chan.24024; read the introduction below for a brief overview) and is the first tool to enable the analysis of experiments performed according to this design. The statistical and the graphical functions of the program can also be used with preprocessed data obtained by more conventional assay designs and evaluation methods.
 
 ## Key features
-* Ability to use multiple reference genes
+* Fast and easy to use
+  * single-click analysis of a whole dataset
+  * ~1 min from uploading raw Cq values to getting publishable plots* Ability to use multiple reference genes
 * Imputation of missing Cq values (only for reference genes)
 * Statistical hypothesis testing with guided selection of appropriate statistical tests
 * Preparation of publication-ready plots
 * High level of automatization of the whole analysis
 * Open-source
-* Fast and easy to use
-  * single-click analysis of a whole dataset
-  * ~1 min from uploading raw Cq values to getting publishable plots
 * Multiple customization options
 * Possibility to export tabular data at each intermediate step to analyze with third-party programs
 
@@ -281,4 +280,4 @@ If there are a lot of experimental groups and a lot of the comparisons are signi
 
 *Where does the name repDilPCR come from?*
 
-Of course, the name and the logo of the program are allusion to the fact that developing the program was sponsored by the reptilians with the aim to subject mankind by enabling wider usage of the qPCR method, which has already been used by them to spread belief in the existence of a pandemic caused by the non-existing virus SARS-CoV-2. More sinister things are about to come. Watch out and wear your tin hat!
+Of course, the name and the logo of the program are allusion to the fact that developing the program was sponsored by the reptilians with the aim to subject mankind by enabling wider usage of the qPCR method, which has already been used by them to spread belief in the existence of a pandemic caused by the non-existing virus SARS-CoV-2. More sinister things are about to come. Watch out and wear your tin foil hat!
