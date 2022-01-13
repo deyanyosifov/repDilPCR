@@ -1,7 +1,7 @@
 ## Title: repDilPCR - a Shiny App to Analyze qPCR Data by the Dilution-replicate Method
 ## File name: app.R
-## Version: 1.0.4
-## Date: 2021-10-22
+## Version: 1.0.5
+## Date: 2022-01-13
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
@@ -169,7 +169,7 @@ ui <- fluidPage(
         ),
         tabPanel("About", h3(tagList("The repDilPCR program was written by Deyan Yordanov Yosifov at the Department of Internal Medicine III of the University Hospital in Ulm, Germany.
                                      The program is inspired by the dilution-replicate approach for design and analysis of real-time PCR assays (Kwokyin Hui & Zhong-Ping Feng (2013)
-                                     Efficient experimental design and analysis of real-time PCR assays, Channels, 7:3, 160-170, DOI: ", a("10.4161/chan.24024", href = "https://doi.org/10.4161/chan.24024"), ")."), style="font-size:12pt"),
+                                     Efficient experimental design and analysis of real-time PCR assays, Channels, 7:3, 160-170, DOI: ", a("10.4161/chan.24024", href = "https://doi.org/10.4161/chan.24024", .noWS = "after"), ")."), style="font-size:12pt"),
                           h3(tagList("\u2003")),
                           h3(tags$b("Overview"), style="font-size:12pt"),
                           h3(tagList("In a qPCR experiment, it is of key importance to determine the efficiency of the PCR reaction for each amplicon and primer pair for correct evaluation and interpretation of the data.
@@ -187,11 +187,18 @@ ui <- fluidPage(
                                      qPCR data (typically less than one minute from raw Cq values to publication-ready plots) and to help users with little knowledge of statistics to select and
                                      perform the appropriate statistical tests, at least in the case of one-factor experimental designs. At the same time, the program allows experienced users to
                                      export intermediate data and perform more sophisticated analyses with external statistical software, e.g. if two-way ANOVA is necessary."), style="font-size:12pt"),
-                          h3(tagList("Detailed user manual can be found ", a("here", href = "https://gitfront.io/r/deyanyosifov/c8e8e53b2f70690abb47d0847dabe55c31e73afd/repDilPCR/"), ". New users of the dilution-replicate method are advised to read the ", a("article", href = "https://doi.org/10.4161/chan.24024")," by Hui and Feng before setting up their experiment and using the program."), style="font-size:12pt"),
+                          h3(tagList("Detailed user manual can be found ", a("here", href = "https://github.com/deyanyosifov/repDilPCR", .noWS = "after"), ". New users of the dilution-replicate method are advised to read the ", a("article", href = "https://doi.org/10.4161/chan.24024")," by Hui and Feng before setting up their experiment and using the program."), style="font-size:12pt"),
                           h3(tagList("\u2003")),
+                          h3(tags$b("Test data downloads"), style="font-size:12pt"),
                           uiOutput("download.test.data"),
                           h6(""),
                           uiOutput("download.test.data.precalc"),
+                          h3(tagList("\u2003")),
+                          h3(tags$b("Users' feedback"), style="font-size:12pt"),
+                          h3(tagList("The GitHub page of the repDilPCR project has a ", a("Discussions tab", href = "https://github.com/deyanyosifov/repDilPCR/discussions"), "where users can ask questions, report bugs, suggest new features, express constructive criticism or get help from the developer, as well as from other users. The developer is also accessible by e-mail at deyan.yosifov@uniklinik-ulm.de."), style="font-size:12pt"),
+                          h3(tagList("\u2003")),
+                          h3(tags$b("Version number"), style="font-size:12pt"),
+                          h3(tagList("1.0.5"), style="font-size:12pt"),
                           h6(textOutput("count"), style="font-size:10pt; color: #fff"))
       )
     )
