@@ -26,6 +26,7 @@ ui <- fluidPage(
       hr(style = "border-top: lpx solid #c0c0c0;"),
 
       fileInput(inputId = "input.table", label = h3("Upload your raw data as a .csv file", accept = ".csv")),
+      h6(""), helpText("By uploading your data and using the program you agree with the Terms of Use and the Data Protection policy.", style = 'text-align:justify;'),
 
       numericInput("RG",
                    h3("Number of reference genes"),
@@ -35,12 +36,13 @@ ui <- fluidPage(
       h6(""), helpText("Do not use if your experiment does not contain replicates."),
       br(),
       actionButton("analyze", "Analyze", width = "100%", style="font-size:16pt; color: #fff; background-color: #5eba7d; border-color: #5e6600"),
+      h6(""), helpText("Please click only once and wait, results will appear in a short while. If the window grays out and the app stops responding, this is most probably due to an error in the formatting of your data. Reload the page and try again.", style = 'text-align:justify;'),
       br(),
       h3("Optional parameters"),
       checkboxInput("statistics", "Test for statistically significant differences between samples or experimental groups", value = TRUE),
 
       textInput("ref.sample", h4("Reference sample or experimental group"), value = "default"),
-      h6(""), helpText("Reference sample, in which gene expression will be regarded as 1 (100%) on linear scale and 0 on log2-scale, respectively. If left to \"default\", this will be the first sample in the table, resp. the leftmost sample on the plots. Change to the name of another sample (without a trailing underscore and replicate number) to make it the reference sample. If left empty, results will be shown in their original form, without forcing any particular sample to be 1 (100%) or 0."),
+      h6(""), helpText("Reference sample, in which gene expression will be regarded as 1 (100%) on linear scale and 0 on log2-scale, respectively. If left to \"default\", this will be the first sample in the table, resp. the leftmost sample on the plots. Change to the name of another sample (without a trailing underscore and replicate number) to make it the reference sample. If left empty, results will be shown in their original form, without forcing any particular sample to be 1 (100%) or 0.", style = 'text-align:justify;'),
 
       radioButtons("test.type", h4("Type of statistical test(s)"),
                    choices = list("parametric", "non-parametric"), selected = "parametric"),
@@ -59,7 +61,7 @@ ui <- fluidPage(
                    choices = list("numeric p-values" = "values", "significance levels (asterisks)" = "asterisks"), selected = "values"),
 
       numericInput("sp.f", h5("Distance between significance bars on plots"), value = 1.5, min = 0, step = 0.5),
-      h6(""), helpText("Spacing factor influencing the distance between significance bars on plots. In most cases, repDilPCR will succeed to distribute significance bars so that they will not overlap. If your significance bars overlap (which can be the case if you compare a lot of experimental groups), you can try increasing this heuristic parameter. Conversely, if the distances between significance bars are too big and they are wasting space on plots, you can try decreasing the factor. The default value is 1.5."),
+      h6(""), helpText("Spacing factor influencing the distance between significance bars on plots. In most cases, repDilPCR will succeed to distribute significance bars so that they will not overlap. If your significance bars overlap (which can be the case if you compare a lot of experimental groups), you can try increasing this heuristic parameter. Conversely, if the distances between significance bars are too big and they are wasting space on plots, you can try decreasing the factor. The default value is 1.5.", style = 'text-align:justify;'),
 
 
       radioButtons("plot.format", h4("Format of graphical output (only for downloadable files)"),
@@ -98,7 +100,7 @@ ui <- fluidPage(
                                         tabPanel(title = "Bar graphs (means and standard deviations)", uiOutput("p6"), value = 7),
                                         tabPanel(title = "Box plots", uiOutput("p5n"), value = 8)
                                         )
-                            ))
+                            )), value = 12
                  ),
         tabPanel("Download results",
                  tabsetPanel(id = "downloads",
@@ -126,6 +128,7 @@ ui <- fluidPage(
                               tabPanel("Plots in logarithmic scale",
                                        uiOutput("download.p4.c"),
                                        shinycssloaders::withSpinner(uiOutput("download.p4")),
+                                       
                                        h6(""),
                                        shinycssloaders::withSpinner(uiOutput("download.p4.zip")),
                                        h6(""),
@@ -154,7 +157,7 @@ ui <- fluidPage(
                    tabPanel(title = "Intermediate data",
                             uiOutput("download.qPCR.b"),
                             uiOutput("download.qPCR"),
-                            uiOutput("download.qPCR.c"),
+                            uiOutput("download.qPCR.c"),                            - 
                             uiOutput("download.eff.df"),
                             h6(""),
                             shinycssloaders::withSpinner(uiOutput("download.stand.curves")),
@@ -169,9 +172,9 @@ ui <- fluidPage(
         ),
         tabPanel("About", h3(tagList("The repDilPCR program was written by Deyan Yordanov Yosifov at the Department of Internal Medicine III of the University Hospital in Ulm, Germany.
                                      The program is inspired by the dilution-replicate approach for design and analysis of real-time PCR assays (Kwokyin Hui & Zhong-Ping Feng (2013)
-                                     Efficient experimental design and analysis of real-time PCR assays, Channels, 7:3, 160-170, DOI: ", a("10.4161/chan.24024", href = "https://doi.org/10.4161/chan.24024", .noWS = "after"), ")."), style="font-size:12pt"),
+                                     Efficient experimental design and analysis of real-time PCR assays, Channels, 7:3, 160-170, DOI: ", a("10.4161/chan.24024", href = "https://doi.org/10.4161/chan.24024", target = "_blank", .noWS = "after"), ")."), style="font-size:12pt;text-align:justify;padding-right:10px;"),
                           h3(tagList("\u2003")),
-                          h3(tags$b("Overview"), style="font-size:12pt"),
+                          h3(tags$b("Overview"), style="font-size:14pt"),
                           h3(tagList("In a qPCR experiment, it is of key importance to determine the efficiency of the PCR reaction for each amplicon and primer pair for correct evaluation and interpretation of the data.
                                      Different approaches to determine efficiency have been developed, from the classical calibration curve-based method to sophisticated methods that rely on fitting
                                      linear or non-linear models on individual amplification curves. Occupying the middle ground between these two extremes is the dilution-replicate experimental
@@ -181,25 +184,38 @@ ui <- fluidPage(
                                      experimental reactions that serve both to control technical variance and to determine efficiency. Like this, all samples contribute to the efficiency estimate,
                                      thus precision increases with the number of samples on a plate. Furthermore, the traditional approach requires that the linear dynamic range of the independent
                                      standard curve covers all sample Cq values which sometimes leads to the necessity to repeat experiments using different dilutions. In contrast, with the
-                                     dilution-replicate design it is guaranteed that the sample Cq values will be within range."), style="font-size:12pt"),
-                          h3(tagList("repDilPCR utilizes the described dilution-replicate analytical method and extends it by adding the possibility to use multiple reference genes. It also offers capabilities for
+                                     dilution-replicate design it is guaranteed that the sample Cq values will be within range."), style="font-size:12pt;text-align:justify;padding-right:10px;"),
+                          h3(tagList("repDilPCR utilizes the) described dilution-replicate analytical method and extends it by adding the possibility to use multiple reference genes. It also offers capabilities for
                                      performing statistical tests and plotting publication-ready graphs. The program has been designed with the philosophy to automate and speed up analysis of
                                      qPCR data (typically less than one minute from raw Cq values to publication-ready plots) and to help users with little knowledge of statistics to select and
                                      perform the appropriate statistical tests, at least in the case of one-factor experimental designs. At the same time, the program allows experienced users to
-                                     export intermediate data and perform more sophisticated analyses with external statistical software, e.g. if two-way ANOVA is necessary."), style="font-size:12pt"),
-                          h3(tagList("Detailed user manual can be found ", a("here", href = "https://github.com/deyanyosifov/repDilPCR", .noWS = "after"), ". New users of the dilution-replicate method are advised to read the ", a("article", href = "https://doi.org/10.4161/chan.24024")," by Hui and Feng before setting up their experiment and using the program."), style="font-size:12pt"),
+                                     export intermediate data and perform more sophisticated analyses with external statistical software, e.g. if two-way ANOVA is necessary."), style="font-size:12pt;text-align:justify;padding-right:10px;"),
+                          h3(tagList("A detailed user manual and the source code of the program are available ", a("here", href = "https://github.com/deyanyosifov/repDilPCR", target = "_blank", .noWS = "after"), ". New users of the dilution-replicate method are advised to read the ", a("article", href = "https://doi.org/10.4161/chan.24024", target = "_blank")," by Hui and Feng before setting up their experiment and using the program."), style="font-size:12pt;text-align:justify;padding-right:10px;"),
                           h3(tagList("\u2003")),
-                          h3(tags$b("Test data downloads"), style="font-size:12pt"),
+                          h3(tags$b("Test data downloads"), style="font-size:14pt"),
                           uiOutput("download.test.data"),
                           h6(""),
-                          uiOutput("download.test.data.precalc"),
+                 
+                 uiOutput("download.test.data.precalc"),
                           h3(tagList("\u2003")),
-                          h3(tags$b("Users' feedback"), style="font-size:12pt"),
-                          h3(tagList("The GitHub page of the repDilPCR project has a ", a("Discussions tab", href = "https://github.com/deyanyosifov/repDilPCR/discussions"), "where users can ask questions, report bugs, suggest new features, express constructive criticism or get help from the developer, as well as from other users. The developer is also accessible by e-mail at deyan.yosifov@uniklinik-ulm.de."), style="font-size:12pt"),
+                          h3(tags$b("Users' feedback"), style="font-size:14pt"),
+                          h3(tagList("The GitHub page of the repDilPCR project has a ", a("Discussions tab", href = "https://github.com/deyanyosifov/repDilPCR/discussions", target = "_blank"), "where users can ask questions, report bugs, suggest new features, express constructive criticism or get help from the developer, as well as from other users. The developer is also accessible by e-mail at ", a(href = "mailto:deyan.yosifov@uniklinik-ulm.de", "deyan.yosifov@uniklinik-ulm.de", .noWS = "after"),"."), style="font-size:12pt;text-align:justify;padding-right:10px;"),
                           h3(tagList("\u2003")),
-                          h3(tags$b("Version number"), style="font-size:12pt"),
+                          h3(tags$b("Version number"), style="font-size:14pt"),
                           h3(tagList("1.0.5"), style="font-size:12pt"),
-                          h6(textOutput("count"), style="font-size:10pt; color: #fff"))
+                          h6(textOutput("count"), style="font-size:10pt; color: #fff")),
+        tabPanel("Terms of use & Data Protection", h3(tagList(text = tags$div(style = 'overflow:auto;max-height:100vh;text-align:justify;padding-right:10px;',
+                                 h5("The repDilPCR Shiny App is a tool for scientific analysis, visualization and interpretation of qPCR data. The tool has not been clinically validated; the use of data and results generated by the repDilPCR app is for scientific purposes only. Use for diagnostic or therapeutic purposes and/or implementation of the results in clinical studies is solely the responsibility of the user and the treating physician."),
+                                 h5("The following applies for the processing of all data by the repDilPCR Shiny App:",
+                                    tags$ul(tags$li("The upload of raw data is done exclusively by the user himself/herself, he/she alone is responsible for the technical quality (execution of laboratory methods, i.e. isolation of nucleic acids, reverse transcription and polymerase chain reaction) and correctness of the uploaded data."),
+                                            tags$li("The data uploaded by the user are stored temporarily for the duration of the processing only, there is no permanent data storage on the server side."),
+                                            tags$li("The results generated by the repDilPCR Shiny App can be viewed by the user within the app itself or downloaded as CSV, PDF and/or PNG files."),
+                                            tags$li("No data and no results are stored in the long term or passed on to third parties. Results are available exclusively for the user as a download. If the current session of the Shiny App is terminated (closing of the browser window, inactivity, timeout, ...), all uploaded and generated files of this session will be deleted from the server."),
+                                            tags$li("Each user is permitted to access and see only the data uploaded and processed by him/her in the respective session."),
+                                            tags$li("Access to data of other users/session IDs is not allowed."),
+                                            tags$li("The repDilPCR Shiny App is a purely scientific tool, which is solely meant to be used for processing, analysis and visualization of raw or pre-processed data for scientific purposes. Clinical validation has not been performed."),
+                                            tags$li("Further use of the results generated by the repDilPCR Shiny App, whether for basic research purposes, as information for treating physicians, for diagnostics, for therapy recommendation, or for the purpose of study design, is solely the responsibility of the user and/or the treating physician."))
+                                 )))))
       )
     )
   )
@@ -246,7 +262,7 @@ server <- function(input, output, session) {
     if (input$analyze > 0) {
       if (colnames(inp.data()$qPCR)[3] == "Dilution") {
         rd.ref(qPCR(), input$RG)
-      } else {
+        } else {
         qPCR()
         }
     }
@@ -254,6 +270,11 @@ server <- function(input, output, session) {
 
   update.qPCR <- observeEvent(qPCR.NF(), {
     output$qPCR <- renderTable({qPCR.NF()})
+    if (colnames(inp.data()$qPCR)[3] == "Dilution") {
+    updateTabsetPanel(session, "panels", selected = "12")
+    } else {
+      updateTabsetPanel(session, "panels", selected = "12")
+    }
   })
 
   observe({
@@ -267,8 +288,7 @@ server <- function(input, output, session) {
       showTab(inputId = "downloads", target = "11")
     }
   })
-
-
+  
   # Multiple linear regression for standard curves ----
   model.list <- reactive({
     req(qPCR.NF())
