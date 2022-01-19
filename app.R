@@ -157,7 +157,7 @@ ui <- fluidPage(
                    tabPanel(title = "Intermediate data",
                             uiOutput("download.qPCR.b"),
                             uiOutput("download.qPCR"),
-                            uiOutput("download.qPCR.c"),                            - 
+                            uiOutput("download.qPCR.c"),
                             uiOutput("download.eff.df"),
                             h6(""),
                             shinycssloaders::withSpinner(uiOutput("download.stand.curves")),
