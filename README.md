@@ -24,7 +24,7 @@ repDilPCR utilizes the described dilution-replicate analytical method (Kwokyin H
 Although the primary goal of the program is to enable analysis of qPCR data via the dilution-replicate approach, the statistical and plotting functions can also be used with preprocessed data (relative expression values) obtained by usual assay designs and evaluation methods.
 
 ## Installation
-The program can be installed on a local computer or on a server (see below). Alternatively, users can freely access and use a working installation hosted on a server at the German Cancer Research Center in Heidelberg, Germany (https://repdilpcr.eu). This service is anonymous, does not require registration and complies with common standards for protection of user data: raw data uploaded by the user are processed on the server and used to generate results that can be downloaded by the user; after the user closes the session by closing the browser window all uploaded data and processed results are automatically deleted from the server (**Warning: if you use a local installation of repDlPCR, do not store your data in the folder where repDilPCR is installed!**).
+The program can be installed on a local computer or on a server (see below). Alternatively, users can freely access and use a working installation hosted on a server at the German Cancer Research Center in Heidelberg, Germany (https://repdilpcr.eu). This service is anonymous, does not require registration and complies with common standards for protection of user data: raw data uploaded by the user are processed on the server and used to generate results that can be downloaded by the user; after the user closes the session by closing the browser window all uploaded data and processed results are automatically deleted from the server (**Warning: if you use a local installation of repDilPCR, do not store your data in the folder where repDilPCR is installed!**).
 
 #### Prerequisites for installation
 * A working installation of R (version 3.6.0 or more recent) on a computer with a Linux or Windows operating system. (Theoretically MacOS should be possible, too, but I haven't had the chance to test whether it works.) The RStudio integrated development environment is recommended for convenient use of the script but not required.
@@ -35,6 +35,14 @@ Download the zip archive of all files in the repository by clicking on "Code" an
 
 #### Installation on a server
 This option is only possible on a server running Linux. Apart from the prerequisites stated above, you will need to install the Shiny Server. (It can be downloaded from https://www.rstudio.com/products/shiny/download-server/, detailed installation instructions are available at https://docs.rstudio.com/shiny-server/#install-shiny.) Installation of repDilPCR on a server is similar to installing on a local computer but the `repDilPCR` directory will have to be placed in `/srv/shiny-server/`. The `shiny` user must have read and write access to `/srv/shiny-server/repDilPCR` and its contents.
+
+#### Browser compatibility
+repDilPCR has been confirmed to work with the following combinations of browsers and operating systems.
+| OS      | Version      | Chrome | Firefox | Microsoft Edge | Safari |
+| ------- | ------------ | ------ | ------- | -------------- | ------ |
+| Linux   | Ubuntu 20.04 | 107.0  | 106.0   | n/a            | n/a    |
+| Windows | 10           | 107.0  | 107.0   | 107.0          | n/a    |
+| MacOS   | Monterey     | 107.0  | 105.0   | 106.0          | 15.6   |
 
 ## Usage
 The program can be used both as an ordinary R script on a local computer or as a Shiny app (either on a local computer or on a server) accessed through a web browser.
