@@ -37,7 +37,7 @@ Download the zip archive of all files in the repository by clicking on "Code" an
 This option is only possible on a server running Linux. Apart from the prerequisites stated above, you will need to install the Shiny Server. (It can be downloaded from https://www.rstudio.com/products/shiny/download-server/, detailed installation instructions are available at https://docs.rstudio.com/shiny-server/#install-shiny.) Installation of repDilPCR on a server is similar to installing on a local computer but the `repDilPCR` directory will have to be placed in `/srv/shiny-server/`. The `shiny` user must have read and write access to `/srv/shiny-server/repDilPCR` and its contents.
 
 #### Browser compatibility
-repDilPCR has been confirmed to work with the following combinations of browsers and operating systems.
+repDilPCR has been confirmed to work with the following combinations of browsers and operating systems:
 | OS      | Version      | Chrome | Firefox | Microsoft Edge | Safari |
 | ------- | ------------ | ------ | ------- | -------------- | ------ |
 | Linux   | Ubuntu 20.04 | 107.0  | 106.0   | n/a            | n/a    |
