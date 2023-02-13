@@ -26,11 +26,11 @@ ui <- fluidPage(
       hr(style = "border-top: lpx solid #c0c0c0;"),
 
       fileInput(inputId = "input.table", label = h3("Upload your raw data as a .csv file", accept = ".csv")),
-      h6(""), helpText("By uploading your data and using the program you agree with the Terms of Use and the Data Protection policy.", style = 'text-align:justify;'),
+      h6(""), helpText("This website uses cookies solely for session management. By uploading your data and using the program you agree with the Terms of Use and the Data Protection policy.", style = 'text-align:justify;'),
 
       numericInput("RG",
                    h3("Number of reference genes"),
-                   value = 3),
+                   value = 3, min = 1, step = 1),
 
       checkboxInput("impute", "Impute missing Cq values of reference genes", value = TRUE),
       h6(""), helpText("Do not use if your experiment does not contain replicates."),
