@@ -1,7 +1,7 @@
 ## Title: repDilPCR - a Shiny App to Analyze qPCR Data by the Dilution-replicate Method
 ## File name: app.R
-## Version: 1.0.6
-## Date: 2023-02-13
+## Version: 1.0.7
+## Date: 2023-03-30
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
@@ -1261,7 +1261,7 @@ server <- function(input, output, session) {
   
   ## Print warning messages if any
   warnings <- reactive({
-    rd.warn(ref.sample = statistics.results()$ref.sample, rel.q.mean = statistics.results()$rel.q.mean, noref.warn = "A valid name of a sample to be used as baseline reference was not provided! Calculated relative quantities are not normalized to a particular sample.", statistics = input$statistics, posthoc = input$posthoc, nostatref.warn = "A reference group for the Dunnett post-hoc test has not been chosen. Please check your input.", frw = statistics.results()$frw, few.repl.warn = statistics.results()$few.repl.warn)
+    rd.warn(ref.sample = statistics.results()$ref.sample, rel.q.mean = statistics.results()$rel.q.mean, noref.warn = "A valid name of a sample to be used as baseline reference was not provided! Calculated relative quantities are not normalized to a particular sample.", statistics = input$statistics, posthoc = input$posthoc, nostatref.warn = "A reference group for the Dunnett post-hoc test has not been chosen. Please check your input.", frw = statistics.results()$frw, few.repl.warn = statistics.results()$few.repl.warn, GOIs = inp.data()$GOIs, qPCR = qPCR.NF(), missingref.warn = "At least one of the genes of interest was not evaluated in the chosen reference sample! The respective plots will be empty and the result tables will not contain data for these genes. Choose a different reference sample or none to process and display all data.")
   })
 
   observeEvent(warnings()$noref.warn, {
@@ -1270,6 +1270,10 @@ server <- function(input, output, session) {
 
   observeEvent(warnings()$nostatref.warn, {
     shinyalert("Warning!", warnings()$nostatref.warn, type = "warning")
+  })
+  
+  observeEvent(warnings()$missingref.warn, {
+    shinyalert("Warning!", warnings()$missingref.warn, type = "warning")
   })
 
   observeEvent(warnings()$few.repl.warn, {

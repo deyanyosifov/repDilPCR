@@ -1,7 +1,7 @@
 ## Title: repDilPCR - an R Script to Analyze qPCR Data by the Dilution-replicate Method
 ## File name: repDilPCR_CLI.R
-## Version: 1.0.6
-## Date: 2023-02-13
+## Version: 1.0.7
+## Date: 2023-03-30
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
@@ -103,6 +103,7 @@ rel.q.results.log <- rd.log(rel.q.detailed = rel.q.results$rel.q.detailed, rel.q
 rel.q.norm.results <- c(rel.q.results, rel.q.results.log)
 rel.q.norm.results <- rd.normalize(rel.q.detailed = rel.q.norm.results$rel.q.detailed, rel.q.detailed.log = rel.q.norm.results$rel.q.detailed.log, rel.q.df = rel.q.norm.results$rel.q.df, rel.q.log = rel.q.norm.results$rel.q.log, rel.q.mean = rel.q.norm.results$rel.q.mean, rel.q.mean.log = rel.q.norm.results$rel.q.mean.log, ref.sample = ref.sample, GOIs = GOIs)
 noref.warn <- c("A valid name of a sample to be used as baseline reference was not provided! Calculated relative quantities are not normalized to a particular sample.\n")
+missingref.warn <- c("At least one of the genes of interest was not evaluated in the chosen reference sample! The respective plots will be empty and the result tables will not contain data for these genes. Choose a different reference sample or none to process and display all data.\n")
 
 ## Calculate confidence intervals
 rel.q.confint <- rd.confint(rel.q.mean = rel.q.norm.results$rel.q.mean, rel.q.mean.log = rel.q.norm.results$rel.q.mean.log, p = alpha)
@@ -197,5 +198,5 @@ if (test.type == "non-parametric") {
 save.tables <- rd.save.tables(input.table = input.table, rel.q.detailed = rel.q.norm.results$rel.q.detailed, rel.q.detailed.log = rel.q.norm.results$rel.q.detailed.log, rel.q.mean = statistics.results$rel.q.mean, rel.q.mean.log = statistics.results$rel.q.mean.log, p = alpha)
 
 ## Print warning messages if any
-rd.warnings <- rd.warn(ref.sample = statistics.results$ref.sample, rel.q.mean = statistics.results$rel.q.mean, noref.warn = noref.warn, statistics = statistics.results$statistics, posthoc = posthoc, nostatref.warn = nostatref.warn, frw = statistics.results$frw, few.repl.warn = statistics.results$few.repl.warn)
+rd.warnings <- rd.warn(ref.sample = statistics.results$ref.sample, rel.q.mean = statistics.results$rel.q.mean, noref.warn = noref.warn, statistics = statistics.results$statistics, posthoc = posthoc, nostatref.warn = nostatref.warn, frw = statistics.results$frw, few.repl.warn = statistics.results$few.repl.warn, GOIs = GOIs, qPCR = qPCR, missingref.warn = missingref.warn)
 

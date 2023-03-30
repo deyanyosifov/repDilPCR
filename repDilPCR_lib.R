@@ -1,7 +1,7 @@
 ## Title: A Library of Functions Used by both the repDilPCR R Script and the repDilPCR Shiny App
 ## File name: repDilPCR_lib.R
-## Version: 1.0.6
-## Date: 2023-02-13
+## Version: 1.0.7
+## Date: 2023-03-30
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
@@ -405,7 +405,7 @@ rd.rel.quant <- function(qPCR, Cq.list, eff.df, GOIs) {
     rel.quantities[[i]] <- c(exp(1)^-(Cq.list[[i]]$coefficients[1]*log(eff.df[i,1])), m)
     # rel.quantities[[paste0(i, ".left.CI")]] <- c(exp(1)^-(confint(Cq.list[[i]])[1,2]*log(eff.df[i,1])), m1)
     # rel.quantities[[paste0(i, ".right.CI")]] <- c(exp(1)^-(confint(Cq.list[[i]])[1,1]*log(eff.df[i,1])), m2)
-    names(rel.quantities[[i]]) <- c(levels(qPCR$Replicates)[1],v)
+    names(rel.quantities[[i]]) <- c(levels(qPCR$Replicates)[qPCR[which(is.na(qPCR[i]) == FALSE),"Replicates"][1]],v)
     # names(rel.quantities[[paste0(i, ".left.CI")]]) <- c(levels(qPCR$Replicates)[1],v)
     # names(rel.quantities[[paste0(i, ".right.CI")]]) <- c(levels(qPCR$Replicates)[1],v)
   }
@@ -1402,12 +1402,16 @@ return(save.tables)
 
 
 ## Print warning messages if any
-rd.warn <- function(ref.sample, rel.q.mean, noref.warn, statistics, posthoc, nostatref.warn, frw, few.repl.warn) {
+rd.warn <- function(ref.sample, rel.q.mean, noref.warn, statistics, posthoc, nostatref.warn, frw, few.repl.warn, GOIs, qPCR, missingref.warn) {
   warnings <- list()
   if ((ref.sample %in% rel.q.mean$Samples) == FALSE) {
     warnings[["noref.warn"]] <- noref.warn
     if (statistics == TRUE && posthoc == "all to one") {
       warnings[["nostatref.warn"]] <- nostatref.warn
+    } 
+  } else {
+    if (sum(is.na(qPCR[ref.sample,GOIs])) > 0) {
+      warnings[["missingref.warn"]] <- missingref.warn
     }
   }
   if (frw == 1) {
