@@ -579,8 +579,8 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
             res.KW[[i]] <-  PMCMRplus::kruskalTest(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i))
             if (res.KW[[i]]$p.value <= p) {
               res.all.to.one[[i]] <- PMCMRplus::kwManyOneDunnTest(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i))
+              res.posthoc[[i]] <- as.data.frame(res.all.to.one[[i]]$p.value, stringsAsFactors = FALSE)
             }
-            res.posthoc[[i]] <- as.data.frame(res.all.to.one[[i]]$p.value, stringsAsFactors = FALSE)
           } else {
             t.t[[i]] <- wilcox.test(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i))
             res.posthoc[[i]] <- as.data.frame(t.t[[i]]$p.value, stringsAsFactors = FALSE)
@@ -590,6 +590,9 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
         }
         res.posthoc[[i]]$Genes <- i
         res.posthoc[[i]]$Comparisons <- rownames(res.posthoc[[i]])
+        if (is.data.frame(res.posthoc[[i]]) == FALSE) {
+          res.posthoc[[i]] <- NULL
+        }
         # for (j in 1:nrow(res.posthoc[[i]])) {
         #   a <- which(rel.q.log$Genes == i & rel.q.log$Samples == res.posthoc[[i]][j, "Comparisons"])
         #   res.posthoc[[i]][j, "y"] <- max(rel.q.log[a, "Rel.quant"])
@@ -625,7 +628,7 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
       # colnames(rel.q.mean.log) <- c("Genes", "Samples", "Expression", "SD", "p.value", "p.val.exp", "asterisks")
     }
     for (k in 1:max(rel.q.df$Pairs)) {
-      t.pairs[[k]] <- unique(subset(rel.q.df, Pairs == k)$Samples)
+     t.pairs[[k]] <- unique(subset(rel.q.df, Pairs == k)$Samples)
     }
     if (posthoc == "all pairs" | posthoc == "selected pairs") {
       for (i in unique(rel.q.log$Genes)) {
@@ -654,16 +657,16 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
           }
         } else {
           if (test.type == "parametric") {
-            res.aov[[i]] <- aov(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i))
+            res.aov[[i]] <- aov(Rel.quant ~ Samples, data = subset(rel.q.log[which(is.na(rel.q.log$Rel.quant) == FALSE),], Genes == i))
             if (car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] > 0.05) {
-              res.pairs[[i]] <- pairwise.t.test(subset(rel.q.log, Genes == i)$Rel.quant, subset(rel.q.log, Genes == i)$Samples, p.adjust.method = "none", paired = FALSE)
-            } else {res.pairs[[i]] <- pairwise.t.test(subset(rel.q.log, Genes == i)$Rel.quant, subset(rel.q.log, Genes == i)$Samples, p.adjust.method = "none", pool.sd = FALSE, paired = FALSE)
+              res.pairs[[i]] <- pairwise.t.test(subset(rel.q.log[which(is.na(rel.q.log$Rel.quant) == FALSE),], Genes == i)$Rel.quant, subset(rel.q.log[which(is.na(rel.q.log$Rel.quant) == FALSE),], Genes == i)$Samples, p.adjust.method = "none", paired = FALSE)
+            } else {res.pairs[[i]] <- pairwise.t.test(subset(rel.q.log[which(is.na(rel.q.log$Rel.quant) == FALSE),], Genes == i)$Rel.quant, subset(rel.q.log[which(is.na(rel.q.log$Rel.quant) == FALSE),], Genes == i)$Samples, p.adjust.method = "none", pool.sd = FALSE, paired = FALSE)
             }
           }
           if (test.type == "non-parametric") {
             # res.KW[[i]] <-  PMCMRplus::kruskalTest(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i))
             # if (res.KW[[i]]$p.value <= p) {
-              res.pairs[[i]] <- pairwise.wilcox.test(subset(rel.q.log, Genes == i)$Rel.quant, subset(rel.q.log, Genes == i)$Samples, p.adjust.method = "none", paired = FALSE)
+              res.pairs[[i]] <- pairwise.wilcox.test(subset(rel.q.log[which(is.na(rel.q.log$Rel.quant) == FALSE),], Genes == i)$Rel.quant, subset(rel.q.log[which(is.na(rel.q.log$Rel.quant) == FALSE),], Genes == i)$Samples, p.adjust.method = "none", paired = FALSE)
             # }
           }
           for (k in colnames(res.pairs[[i]]$p.value)) {
@@ -697,9 +700,9 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
           for (j in 1:nrow(res.posthoc[[i]])) {
             a <- which(rel.q.log$Genes == i & rel.q.log$Samples == res.posthoc[[i]][j, "Group1"] | rel.q.log$Genes == i & rel.q.log$Samples == res.posthoc[[i]][j, "Group2"])
             b <- which(rel.q.mean.log$Genes == i & rel.q.mean.log$Samples == res.posthoc[[i]][j, "Group1"] | rel.q.mean.log$Genes == i & rel.q.mean.log$Samples == res.posthoc[[i]][j, "Group2"])
-            res.posthoc[[i]][j, "y"] <- max(rel.q.log[seq(a[1],a[length(a)]), "Rel.quant"])
-            res.posthoc[[i]][j, "y.s"] <- max(rel.q.mean.log[seq(b[1],b[length(b)]), "Expression"] + rel.q.mean.log[seq(b[1],b[length(b)]), "SD"])
-            res.posthoc[[i]][j, "y.s.lin"] <- 2^max(rel.q.mean.log[seq(b[1],b[length(b)]), "right.CI"])
+            res.posthoc[[i]][j, "y"] <- max(rel.q.log[seq(a[1],a[length(a)]), "Rel.quant"], na.rm = TRUE)
+            res.posthoc[[i]][j, "y.s"] <- max(rel.q.mean.log[seq(b[1],b[length(b)]), "Expression"] + rel.q.mean.log[seq(b[1],b[length(b)]), "SD"], na.rm = TRUE)
+            res.posthoc[[i]][j, "y.s.lin"] <- 2^max(rel.q.mean.log[seq(b[1],b[length(b)]), "right.CI"], na.rm = TRUE)
           }
         }
         # colnames(rel.q.mean.log) <- c("Genes", "Samples", "Expression", "SD")
@@ -719,19 +722,19 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
       # The next loop is just a complicated logic to ensure that statistical significance bars on figures do not overlap and are adequately positioned regarding data and plot margins
       un.diff.c.lin <- un.diff.c <- un.diff.b.lin <- un.diff.b <- un.diff.lin <- un.diff <- span.lin <- span <- mx.lin <- mx <- mn.lin <- mn <- vector()
       for (i in unique(res.posthoc$Genes)) {
-        mn[i] <- min(rel.q.log[which(rel.q.log$Genes == i), "Rel.quant"])
-        mx[i] <- max(rel.q.log[which(rel.q.log$Genes == i), "Rel.quant"])
+        mn[i] <- min(rel.q.log[which(rel.q.log$Genes == i), "Rel.quant"], na.rm = TRUE)
+        mx[i] <- max(rel.q.log[which(rel.q.log$Genes == i), "Rel.quant"], na.rm = TRUE)
         span[i] <- mx[i] - mn[i]
-        mn.lin[i] <- min(rel.q.df[which(rel.q.df$Genes == i), "Rel.quant"])
-        mx.lin[i] <- max(rel.q.df[which(rel.q.df$Genes == i), "Rel.quant"])
+        mn.lin[i] <- min(rel.q.df[which(rel.q.df$Genes == i), "Rel.quant"], na.rm = TRUE)
+        mx.lin[i] <- max(rel.q.df[which(rel.q.df$Genes == i), "Rel.quant"], na.rm = TRUE)
         span.lin[i] <- mx.lin[i] - mn.lin[i]
         res.posthoc[which(res.posthoc$Genes == i), "y"] <- res.posthoc[which(res.posthoc$Genes == i), "y"] + 0.1*span[i]
         res.posthoc[which(res.posthoc$Genes == i), "y.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y.lin"] + 0.1*span.lin[i]
         res.posthoc[which(res.posthoc$Genes == i), "y.s"] <- res.posthoc[which(res.posthoc$Genes == i), "y.s"] + 0.1*span[i]
         res.posthoc[which(res.posthoc$Genes == i), "y.s.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y.s.lin"] + 0.1*span.lin[i]
         if (length(which(res.posthoc$Genes == i)) > 1 && posthoc != "selected pairs") {
-          res.posthoc[which(res.posthoc$Genes == i), "y1"] <- seq(min(res.posthoc[which(res.posthoc$Genes == i), "y"]), ceiling(mx[i] + 0.1*span[i]), length.out = nrow(res.posthoc[which(res.posthoc$Genes == i),]))
-          res.posthoc[which(res.posthoc$Genes == i), "y1.lin"] <- seq(min(res.posthoc[which(res.posthoc$Genes == i), "y.lin"]), ceiling(mx.lin[i] + 0.1*span.lin[i]), length.out = nrow(res.posthoc[which(res.posthoc$Genes == i),]))
+          res.posthoc[which(res.posthoc$Genes == i), "y1"] <- seq(min(res.posthoc[which(res.posthoc$Genes == i), "y"], na.rm = TRUE), ceiling(mx[i] + 0.1*span[i]), length.out = nrow(res.posthoc[which(res.posthoc$Genes == i),]))
+          res.posthoc[which(res.posthoc$Genes == i), "y1.lin"] <- seq(min(res.posthoc[which(res.posthoc$Genes == i), "y.lin"], na.rm = TRUE), ceiling(mx.lin[i] + 0.1*span.lin[i]), length.out = nrow(res.posthoc[which(res.posthoc$Genes == i),]))
           un.diff[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y1"][2] - res.posthoc[which(res.posthoc$Genes == i), "y1"][1])
           un.diff.lin[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y1.lin"][2] - res.posthoc[which(res.posthoc$Genes == i), "y1.lin"][1])
           res.posthoc[which(res.posthoc$Genes == i), "y2"] <- res.posthoc[which(res.posthoc$Genes == i), "y"]
@@ -857,15 +860,15 @@ rd.plot.p1 <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, stat
     }
     if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
       for (i in unique((rel.q.df %>% filter(p.value <= p))$Genes)) {
-        p1[[i]] <- p1[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant) - min(subset(rel.q.df, Genes == i)$Rel.quant)), colour = "gray20", size = font.size/3)
+        p1[[i]] <- p1[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
       for (i in unique((rel.q.df %>% filter(p.value <= .Machine$double.eps))$Genes)) {
-        p1[[i]] <- p1[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant) - min(subset(rel.q.df, Genes == i)$Rel.quant)), colour = "gray20", size = font.size/3)
+        p1[[i]] <- p1[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
     }
     if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
       for (i in unique((rel.q.df %>% filter(p.value <= p))$Genes)) {
-        p1[[i]] <- p1[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant) - min(subset(rel.q.df, Genes == i)$Rel.quant)), colour = "gray20", size = font.size/3 + 1)
+        p1[[i]] <- p1[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3 + 1)
       }
     }
     for (i in GOIs) {
@@ -925,15 +928,15 @@ rd.plot.p2 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
     }
     if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
       for (i in unique((rel.q.mean %>% filter(p.value <= p))$Genes)) {
-        p2[[i]] <- p2[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean, Genes == i & p.value <= p & p.value > .Machine$double.eps)$right.CI - subset(rel.q.mean, Genes == i & p.value <= p & p.value > .Machine$double.eps)$Expression + 0.1*max(subset(rel.q.mean, Genes == i)$right.CI), colour = "gray20", size = font.size/3)
+        p2[[i]] <- p2[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean, Genes == i & p.value <= p & p.value > .Machine$double.eps)$right.CI - subset(rel.q.mean, Genes == i & p.value <= p & p.value > .Machine$double.eps)$Expression + 0.1*max(subset(rel.q.mean, Genes == i)$right.CI, na.rm = TRUE), colour = "gray20", size = font.size/3)
       }
       for (i in unique((rel.q.mean %>% filter(p.value <= .Machine$double.eps))$Genes)) {
-        p2[[i]] <- p2[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean, Genes == i & p.value <= .Machine$double.eps)$right.CI - subset(rel.q.mean, Genes == i & p.value <= .Machine$double.eps)$Expression + 0.1*max(subset(rel.q.mean, Genes == i)$right.CI), colour = "gray20", size = font.size/3)
+        p2[[i]] <- p2[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean, Genes == i & p.value <= .Machine$double.eps)$right.CI - subset(rel.q.mean, Genes == i & p.value <= .Machine$double.eps)$Expression + 0.1*max(subset(rel.q.mean, Genes == i)$right.CI, na.rm = TRUE), colour = "gray20", size = font.size/3)
       }
     }
     if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
       for (i in unique((rel.q.mean %>% filter(p.value <= p))$Genes)) {
-        p2[[i]] <- p2[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = subset(rel.q.mean, Genes == i & p.value <= p)$right.CI - subset(rel.q.mean, Genes == i & p.value <= p)$Expression + 0.1*max(subset(rel.q.mean, Genes == i)$right.CI), colour = "gray20", size = font.size/3 + 1)
+        p2[[i]] <- p2[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = subset(rel.q.mean, Genes == i & p.value <= p)$right.CI - subset(rel.q.mean, Genes == i & p.value <= p)$Expression + 0.1*max(subset(rel.q.mean, Genes == i)$right.CI, na.rm = TRUE), colour = "gray20", size = font.size/3 + 1)
       }
     }
     for (i in GOIs) {
@@ -993,15 +996,15 @@ rd.plot.p3 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
     }
     if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
       for (i in unique((rel.q.mean %>% filter(p.value <= p))$Genes)) {
-        p3[[i]] <- p3[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean, Genes == i & p.value <= p & p.value > .Machine$double.eps)$right.CI - subset(rel.q.mean, Genes == i & p.value <= p & p.value > .Machine$double.eps)$Expression + 0.05*max(subset(rel.q.mean, Genes == i)$right.CI), colour = "gray20", size = font.size/3)
+        p3[[i]] <- p3[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean, Genes == i & p.value <= p & p.value > .Machine$double.eps)$right.CI - subset(rel.q.mean, Genes == i & p.value <= p & p.value > .Machine$double.eps)$Expression + 0.05*max(subset(rel.q.mean, Genes == i)$right.CI, na.rm = TRUE), colour = "gray20", size = font.size/3)
       }
       for (i in unique((rel.q.mean %>% filter(p.value <= .Machine$double.eps))$Genes)) {
-        p3[[i]] <- p3[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean, Genes == i & p.value <= .Machine$double.eps)$right.CI - subset(rel.q.mean, Genes == i & p.value <= .Machine$double.eps)$Expression + 0.05*max(subset(rel.q.mean, Genes == i)$right.CI), colour = "gray20", size = font.size/3)
+        p3[[i]] <- p3[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean, Genes == i & p.value <= .Machine$double.eps)$right.CI - subset(rel.q.mean, Genes == i & p.value <= .Machine$double.eps)$Expression + 0.05*max(subset(rel.q.mean, Genes == i)$right.CI, na.rm = TRUE), colour = "gray20", size = font.size/3)
       }
     }
     if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
       for (i in unique((rel.q.mean %>% filter(p.value <= p))$Genes)) {
-        p3[[i]] <- p3[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = subset(rel.q.mean, Genes == i & p.value <= p)$right.CI - subset(rel.q.mean, Genes == i & p.value <= p)$Expression + 0.05*max(subset(rel.q.mean, Genes == i)$right.CI), colour = "gray20", size = font.size/3 + 1)
+        p3[[i]] <- p3[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = subset(rel.q.mean, Genes == i & p.value <= p)$right.CI - subset(rel.q.mean, Genes == i & p.value <= p)$Expression + 0.05*max(subset(rel.q.mean, Genes == i)$right.CI, na.rm = TRUE), colour = "gray20", size = font.size/3 + 1)
       }
     }
     for (i in GOIs) {
@@ -1061,15 +1064,15 @@ rd.plot.p2n <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
     }
     if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
       for (i in unique((rel.q.df %>% filter(p.value <= p))$Genes)) {
-        p2n[[i]] <- p2n[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant) - min(subset(rel.q.df, Genes == i)$Rel.quant)), colour = "gray20", size = font.size/3)
+        p2n[[i]] <- p2n[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
       for (i in unique((rel.q.df %>% filter(p.value <= .Machine$double.eps))$Genes)) {
-        p2n[[i]] <- p2n[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant) - min(subset(rel.q.df, Genes == i)$Rel.quant)), colour = "gray20", size = font.size/3)
+        p2n[[i]] <- p2n[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
     }
     if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
       for (i in unique((rel.q.df %>% filter(p.value <= p))$Genes)) {
-        p2n[[i]] <- p2n[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant) - min(subset(rel.q.df, Genes == i)$Rel.quant)), colour = "gray20", size = font.size/3 + 1)
+        p2n[[i]] <- p2n[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3 + 1)
       }
     }
     for (i in GOIs) {
@@ -1129,15 +1132,15 @@ rd.plot.p4 <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
     }
     if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
       for (i in unique((rel.q.log %>% filter(p.value <= p))$Genes)) {
-        p4[[i]] <- p4[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant) - min(subset(rel.q.log, Genes == i)$Rel.quant)), colour = "gray20", size = font.size/3)
+        p4[[i]] <- p4[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
       for (i in unique((rel.q.log %>% filter(p.value <= .Machine$double.eps))$Genes)) {
-        p4[[i]] <- p4[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant) - min(subset(rel.q.log, Genes == i)$Rel.quant)), colour = "gray20", size = font.size/3)
+        p4[[i]] <- p4[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
     }
     if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
       for (i in unique((rel.q.log %>% filter(p.value <= p))$Genes)) {
-        p4[[i]] <- p4[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant) - min(subset(rel.q.log, Genes == i)$Rel.quant)), colour = "gray20", size = font.size/3 + 1)
+        p4[[i]] <- p4[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3 + 1)
       }
     }
     for (i in GOIs) {
@@ -1197,15 +1200,15 @@ rd.plot.p5 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics
     }
     if (statistics == TRUE && ref.sample %in% rel.q.mean.log$Samples && sign.repr == "values") {
       for (i in unique((rel.q.mean.log %>% filter(p.value <= p))$Genes)) {
-        p5[[i]] <- p5[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean.log, Genes == i & p.value <= p & p.value > .Machine$double.eps)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression) - min(subset(rel.q.mean.log, Genes == i)$Expression)), colour = "gray20", size = font.size/3)
+        p5[[i]] <- p5[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean.log, Genes == i & p.value <= p & p.value > .Machine$double.eps)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
       for (i in unique((rel.q.mean.log %>% filter(p.value <= .Machine$double.eps))$Genes)) {
-        p5[[i]] <- p5[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean.log, Genes == i & p.value <= .Machine$double.eps)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression) - min(subset(rel.q.mean.log, Genes == i)$Expression)), colour = "gray20", size = font.size/3)
+        p5[[i]] <- p5[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean.log, Genes == i & p.value <= .Machine$double.eps)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
     }
     if (statistics == TRUE && ref.sample %in% rel.q.mean.log$Samples && sign.repr == "asterisks") {
       for (i in unique((rel.q.mean.log %>% filter(p.value <= p))$Genes)) {
-        p5[[i]] <- p5[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = subset(rel.q.mean.log, Genes == i & p.value <= p)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression) - min(subset(rel.q.mean.log, Genes == i)$Expression)), colour = "gray20", size = font.size/3 + 1)
+        p5[[i]] <- p5[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = subset(rel.q.mean.log, Genes == i & p.value <= p)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE)), colour = "gray20", size = font.size/3 + 1)
       }
     }
     for (i in GOIs) {
@@ -1265,15 +1268,15 @@ if (statistics == FALSE | posthoc == "all to one") {
   }
   if (statistics == TRUE && ref.sample %in% rel.q.mean.log$Samples && sign.repr == "values") {
     for (i in unique((rel.q.mean.log %>% filter(p.value <= p))$Genes)) {
-      p6[[i]] <- p6[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = ifelse(subset(rel.q.mean.log, Genes == i & p.value <= p)$Expression < 0, -subset(rel.q.mean.log, Genes == i & p.value <= p)$SD - 0.05*(max(subset(rel.q.mean.log, Genes == i)$Expression) - min(subset(rel.q.mean.log, Genes == i)$Expression)), subset(rel.q.mean.log, Genes == i & p.value <= p)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression) - min(subset(rel.q.mean.log, Genes == i)$Expression))), colour = "gray20", size = font.size/3)
+      p6[[i]] <- p6[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = ifelse(subset(rel.q.mean.log, Genes == i & p.value <= p)$Expression < 0, -subset(rel.q.mean.log, Genes == i & p.value <= p)$SD - 0.05*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE)), subset(rel.q.mean.log, Genes == i & p.value <= p)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE))), colour = "gray20", size = font.size/3)
     }
     for (i in unique((rel.q.mean.log %>% filter(p.value <= .Machine$double.eps))$Genes)) {
-      p6[[i]] <- p6[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = ifelse(subset(rel.q.mean.log, Genes == i & p.value <= p)$Expression < 0, -subset(rel.q.mean.log, Genes == i & p.value <= p)$SD - 0.05*(max(subset(rel.q.mean.log, Genes == i)$Expression) - min(subset(rel.q.mean.log, Genes == i)$Expression)), subset(rel.q.mean.log, Genes == i & p.value <= p)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression) - min(subset(rel.q.mean.log, Genes == i)$Expression))), colour = "gray20", size = font.size/3)
+      p6[[i]] <- p6[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = ifelse(subset(rel.q.mean.log, Genes == i & p.value <= p)$Expression < 0, -subset(rel.q.mean.log, Genes == i & p.value <= p)$SD - 0.05*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE)), subset(rel.q.mean.log, Genes == i & p.value <= p)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE))), colour = "gray20", size = font.size/3)
     }
   }
   if (statistics == TRUE && ref.sample %in% rel.q.mean.log$Samples && sign.repr == "asterisks") {
     for (i in unique((rel.q.mean.log %>% filter(p.value <= p))$Genes)) {
-      p6[[i]] <- p6[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = ifelse(subset(rel.q.mean.log, Genes == i & p.value <= p)$Expression < 0, -subset(rel.q.mean.log, Genes == i & p.value <= p)$SD - 0.05*(max(subset(rel.q.mean.log, Genes == i)$Expression) - min(subset(rel.q.mean.log, Genes == i)$Expression)), subset(rel.q.mean.log, Genes == i & p.value <= p)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression) - min(subset(rel.q.mean.log, Genes == i)$Expression))), colour = "gray20", size = font.size/3 + 1)
+      p6[[i]] <- p6[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = ifelse(subset(rel.q.mean.log, Genes == i & p.value <= p)$Expression < 0, -subset(rel.q.mean.log, Genes == i & p.value <= p)$SD - 0.05*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE)), subset(rel.q.mean.log, Genes == i & p.value <= p)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE))), colour = "gray20", size = font.size/3 + 1)
     }
   }
   for (i in GOIs) {
@@ -1334,15 +1337,15 @@ if (statistics == FALSE | posthoc == "all to one") {
   }
   if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
     for (i in unique((rel.q.log %>% filter(p.value <= p))$Genes)) {
-      p5n[[i]] <- p5n[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant) - min(subset(rel.q.log, Genes == i)$Rel.quant)), colour = "gray20", size = font.size/3)
+      p5n[[i]] <- p5n[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
     }
     for (i in unique((rel.q.log %>% filter(p.value <= .Machine$double.eps))$Genes)) {
-      p5n[[i]] <- p5n[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant) - min(subset(rel.q.log, Genes == i)$Rel.quant)), colour = "gray20", size = font.size/3)
+      p5n[[i]] <- p5n[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
     }
   }
   if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
     for (i in unique((rel.q.log %>% filter(p.value <= p))$Genes)) {
-      p5n[[i]] <- p5n[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant) - min(subset(rel.q.log, Genes == i)$Rel.quant)), colour = "gray20", size = font.size/3 + 1)
+      p5n[[i]] <- p5n[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3 + 1)
     }
   }
   for (i in GOIs) {
