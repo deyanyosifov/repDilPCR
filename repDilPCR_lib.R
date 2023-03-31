@@ -495,9 +495,15 @@ rd.normalize <- function(rel.q.detailed, rel.q.detailed.log, rel.q.df, rel.q.log
   }
   if (ref.sample %in% rel.q.mean$Samples) {
     norm.factor.log <- norm.factor <- numeric()
+    nonorm <- 0
     for (i in unique(rel.q.mean$Genes)) {
       norm.factor[i] <- rel.q.mean[which(rel.q.mean$Genes == i & rel.q.mean$Samples == ref.sample),"Expression"]
       norm.factor.log[i] <- rel.q.mean.log[which(rel.q.mean.log$Genes == i & rel.q.mean.log$Samples == ref.sample),"Expression"]
+      if (is.na(norm.factor[i])) {
+        norm.factor[i] <- 1
+        norm.factor.log[i] <- 0
+        nonorm <- 1
+        }
     }
     for (i in GOIs) {
       rel.q.detailed[, i] <- rel.q.detailed[, i]/norm.factor[i]
@@ -516,7 +522,7 @@ rd.normalize <- function(rel.q.detailed, rel.q.detailed.log, rel.q.df, rel.q.log
       rel.q.mean.log[which(rel.q.mean.log$Genes == i), "Expression"] <- rel.q.mean.log[which(rel.q.mean.log$Genes == i), "Expression"] - norm.factor.log[i]
     }
   }
-  rel.q.norm.results <- list("rel.q.detailed" = rel.q.detailed, "rel.q.df" = rel.q.df, "rel.q.mean" = rel.q.mean, "rel.q.detailed.log" = rel.q.detailed.log, "rel.q.log" = rel.q.log, "rel.q.mean.log" = rel.q.mean.log, "ref.sample" = ref.sample)
+  rel.q.norm.results <- list("rel.q.detailed" = rel.q.detailed, "rel.q.df" = rel.q.df, "rel.q.mean" = rel.q.mean, "rel.q.detailed.log" = rel.q.detailed.log, "rel.q.log" = rel.q.log, "rel.q.mean.log" = rel.q.mean.log, "ref.sample" = ref.sample, "nonorm" = nonorm)
   return(rel.q.norm.results)
 }
 
@@ -535,7 +541,7 @@ rd.confint <- function(rel.q.mean, rel.q.mean.log, p) {
 
 
 ## Statistical tests
-rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, statistics, test.type, posthoc, ref.sample, p, sp.f) {
+rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, statistics, test.type, posthoc, ref.sample, nonorm, p, sp.f) {
   frw <- 0
   few.repl.warn <- c()
   if (statistics == TRUE && min(table(rel.q.df$Samples))/length(unique(rel.q.df$Genes)) < 3) {
@@ -544,7 +550,7 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
     frw <- 1
   }
   res.posthoc <- t.pairs <- res.all.to.one <- res.pairs <- t.t <- res.KW <- res.aov <- list()
-  if (statistics == TRUE) {
+  if (statistics == TRUE && nonorm == 0) {
     if (posthoc == "all to one" && ref.sample %in% rel.q.mean$Samples) {
       rel.q.log$Samples <- relevel(rel.q.log$Samples, ref = as.character(ref.sample))
       # rel.q.log <- rel.q.log[order(rel.q.log$Genes, rel.q.log$Samples),]
@@ -788,7 +794,7 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
   # }
 
   stat.test <- list()
-  if (statistics == TRUE) {
+  if (statistics == TRUE && nonorm == 0) {
     if (posthoc == "all to one" && ref.sample %in% rel.q.mean$Samples) {
       for (i in unique(rel.q.log$Genes)) {
         if (length(unique(as.character(rel.q.log$Samples))) > 2) {
@@ -841,7 +847,7 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
 
 
 ## Plot relative expression
-rd.plot.p1 <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size) {
+rd.plot.p1 <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
   p1 <- list()
   if (statistics == FALSE | posthoc == "all to one") {
     for (i in GOIs) {
@@ -858,7 +864,7 @@ rd.plot.p1 <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, stat
         ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
         ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
     }
-    if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
+    if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
       for (i in unique((rel.q.df %>% filter(p.value <= p))$Genes)) {
         p1[[i]] <- p1[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
@@ -866,7 +872,7 @@ rd.plot.p1 <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, stat
         p1[[i]] <- p1[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
     }
-    if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
+    if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
       for (i in unique((rel.q.df %>% filter(p.value <= p))$Genes)) {
         p1[[i]] <- p1[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3 + 1)
       }
@@ -876,9 +882,13 @@ rd.plot.p1 <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, stat
     }
   } else {
     for (i in GOIs) {
+      cc <- NULL
+      if (statistics == TRUE && nonorm == 0 && length(res.posthoc$Genes) != 0) {
+        cc <- max(subset(res.posthoc, Genes == i)$y2.lin)*1.025
+      }
       p1[[i]] <-ggplot2::ggplot(subset(rel.q.df, Genes == i), ggplot2::aes(x=Samples, y=Rel.quant, colour=Samples, fill=Samples)) +
         ggbeeswarm::geom_beeswarm(cex = 2, size = 2, groupOnX = TRUE) +
-        ggplot2::ylim(0, max(ceiling(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)*1.025), max(subset(res.posthoc, Genes == i)$y2.lin)*1.025)) +
+        ggplot2::ylim(0, max(ceiling(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)*1.025), cc)) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab("Relative expression") +
@@ -889,12 +899,12 @@ rd.plot.p1 <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, stat
         ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
         ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
     }
-    if (statistics == TRUE && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
+    if (statistics == TRUE && nonorm == 0 && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
       for (i in unique(res.posthoc$Genes)) {
         p1[[i]] <- p1[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = paste0("p == ", p.val.exp), y_position = y2.lin), size = 0.25, textsize = font.size/3, colour = "gray20", vjust = 0.2, tip_length = 0.02, show.legend = FALSE, parse = TRUE, manual = TRUE)
       }
     }
-    if (statistics == TRUE && sign.repr == "asterisks"  && length(res.posthoc$Genes) != 0) {
+    if (statistics == TRUE && nonorm == 0 && sign.repr == "asterisks"  && length(res.posthoc$Genes) != 0) {
       for (i in unique(res.posthoc$Genes)) {
         p1[[i]] <- p1[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = asterisks, y_position = y2.lin), size = 0.25, textsize = font.size/3 + 1, colour = "gray20", vjust = 0.4, tip_length = 0.02, show.legend = FALSE, manual = TRUE)
       }
@@ -908,7 +918,7 @@ rd.plot.p1 <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, stat
   return(p1.results)
 }
 
-rd.plot.p2 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size) {
+rd.plot.p2 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
   p2 <- list()
   if (statistics == FALSE | posthoc == "all to one") {
     for (i in GOIs) {
@@ -926,7 +936,7 @@ rd.plot.p2 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
         ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
         ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
     }
-    if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
+    if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
       for (i in unique((rel.q.mean %>% filter(p.value <= p))$Genes)) {
         p2[[i]] <- p2[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean, Genes == i & p.value <= p & p.value > .Machine$double.eps)$right.CI - subset(rel.q.mean, Genes == i & p.value <= p & p.value > .Machine$double.eps)$Expression + 0.1*max(subset(rel.q.mean, Genes == i)$right.CI, na.rm = TRUE), colour = "gray20", size = font.size/3)
       }
@@ -934,7 +944,7 @@ rd.plot.p2 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
         p2[[i]] <- p2[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean, Genes == i & p.value <= .Machine$double.eps)$right.CI - subset(rel.q.mean, Genes == i & p.value <= .Machine$double.eps)$Expression + 0.1*max(subset(rel.q.mean, Genes == i)$right.CI, na.rm = TRUE), colour = "gray20", size = font.size/3)
       }
     }
-    if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
+    if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
       for (i in unique((rel.q.mean %>% filter(p.value <= p))$Genes)) {
         p2[[i]] <- p2[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = subset(rel.q.mean, Genes == i & p.value <= p)$right.CI - subset(rel.q.mean, Genes == i & p.value <= p)$Expression + 0.1*max(subset(rel.q.mean, Genes == i)$right.CI, na.rm = TRUE), colour = "gray20", size = font.size/3 + 1)
       }
@@ -944,10 +954,14 @@ rd.plot.p2 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
     }
   } else {
     for (i in GOIs) {
+      cc <- NULL
+      if (statistics == TRUE && nonorm == 0 && length(res.posthoc$Genes) != 0) {
+        cc <- max(subset(res.posthoc, Genes == i)$y4.lin)*1.025
+      }
       p2[[i]] <- ggplot2::ggplot(subset(rel.q.mean, Genes == i), ggplot2::aes(x=Samples, y=Expression, colour=Samples, fill=Samples)) +
         ggplot2::geom_point(size=2) +
         ggplot2::geom_errorbar(aes(ymin=left.CI, ymax=right.CI), width=.2) +
-        ggplot2::ylim(0, max(ceiling(max(subset(rel.q.mean, Genes == i)$right.CI)*1.025), max(subset(res.posthoc, Genes == i)$y4.lin)*1.025)) +
+        ggplot2::ylim(0, max(ceiling(max(subset(rel.q.mean, Genes == i)$right.CI)*1.025), cc)) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab("Relative expression") +
@@ -958,12 +972,12 @@ rd.plot.p2 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
         ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
         ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
     }
-    if (statistics == TRUE && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
+    if (statistics == TRUE && nonorm == 0 && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
       for (i in unique(res.posthoc$Genes)) {
         p2[[i]] <- p2[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = paste0("p == ", p.val.exp), y_position = y4.lin), size = 0.25, textsize = font.size/3, colour = "gray20", vjust = 0.2, tip_length = 0.02, show.legend = FALSE, parse = TRUE, manual = TRUE)
       }
     }
-    if (statistics == TRUE && sign.repr == "asterisks" && length(res.posthoc$Genes) != 0) {
+    if (statistics == TRUE && nonorm == 0 && sign.repr == "asterisks" && length(res.posthoc$Genes) != 0) {
       for (i in unique(res.posthoc$Genes)) {
         p2[[i]] <- p2[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = asterisks, y_position = y4.lin), size = 0.25, textsize = font.size/3 + 1, colour = "gray20", vjust = 0.4, tip_length = 0.02, show.legend = FALSE, manual = TRUE)
       }
@@ -977,7 +991,7 @@ rd.plot.p2 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
   return(p2.results)
 }
 
-rd.plot.p3 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size) {
+rd.plot.p3 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
   p3 <- list()
   if (statistics == FALSE | posthoc == "all to one") {
     for (i in GOIs) {
@@ -994,7 +1008,7 @@ rd.plot.p3 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
         ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
         ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
     }
-    if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
+    if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
       for (i in unique((rel.q.mean %>% filter(p.value <= p))$Genes)) {
         p3[[i]] <- p3[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean, Genes == i & p.value <= p & p.value > .Machine$double.eps)$right.CI - subset(rel.q.mean, Genes == i & p.value <= p & p.value > .Machine$double.eps)$Expression + 0.05*max(subset(rel.q.mean, Genes == i)$right.CI, na.rm = TRUE), colour = "gray20", size = font.size/3)
       }
@@ -1002,7 +1016,7 @@ rd.plot.p3 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
         p3[[i]] <- p3[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean, Genes == i & p.value <= .Machine$double.eps)$right.CI - subset(rel.q.mean, Genes == i & p.value <= .Machine$double.eps)$Expression + 0.05*max(subset(rel.q.mean, Genes == i)$right.CI, na.rm = TRUE), colour = "gray20", size = font.size/3)
       }
     }
-    if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
+    if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
       for (i in unique((rel.q.mean %>% filter(p.value <= p))$Genes)) {
         p3[[i]] <- p3[[i]] + ggplot2::geom_text(data = rel.q.mean %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = subset(rel.q.mean, Genes == i & p.value <= p)$right.CI - subset(rel.q.mean, Genes == i & p.value <= p)$Expression + 0.05*max(subset(rel.q.mean, Genes == i)$right.CI, na.rm = TRUE), colour = "gray20", size = font.size/3 + 1)
       }
@@ -1012,10 +1026,14 @@ rd.plot.p3 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
     }
   } else {
     for (i in GOIs) {
+      cc <- NULL
+      if (statistics == TRUE && nonorm == 0 && length(res.posthoc$Genes) != 0) {
+        cc <- max(subset(res.posthoc, Genes == i)$y6.lin)*1.025
+      }
       p3[[i]] <- ggplot2::ggplot(subset(rel.q.mean, Genes == i), ggplot2::aes(x=Samples, y=Expression, colour=Samples, fill=Samples)) +
         ggplot2::geom_col(position = "dodge") +
         ggplot2::geom_errorbar(aes(ymin=left.CI, ymax=right.CI), width=.2, position=position_dodge(.9), color="gray20") +
-        ggplot2::ylim(0, max(subset(res.posthoc, Genes == i)$y6.lin)*1.025) +
+        ggplot2::ylim(0, max(ceiling(max(subset(rel.q.mean, Genes == i)$right.CI)*1.025), cc)) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab("Relative expression") +
@@ -1026,12 +1044,12 @@ rd.plot.p3 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
         ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
         ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
     }
-    if (statistics == TRUE && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
+    if (statistics == TRUE && nonorm == 0 && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
       for (i in unique(res.posthoc$Genes)) {
         p3[[i]] <- p3[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = paste0("p == ", p.val.exp), y_position = y6.lin), size = 0.25, textsize = font.size/3, colour = "gray20", vjust = 0.2, tip_length = 0.02, show.legend = FALSE, parse = TRUE, manual = TRUE)
       }
     }
-    if (statistics == TRUE && sign.repr == "asterisks" && length(res.posthoc$Genes) != 0) {
+    if (statistics == TRUE && nonorm == 0 && sign.repr == "asterisks" && length(res.posthoc$Genes) != 0) {
       for (i in unique(res.posthoc$Genes)) {
         p3[[i]] <- p3[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = asterisks, y_position = y6.lin), size = 0.25, textsize = font.size/3 + 1, colour = "gray20", vjust = 0.4, tip_length = 0.02, show.legend = FALSE, manual = TRUE)
       }
@@ -1045,7 +1063,7 @@ rd.plot.p3 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
   return(p3.results)
 }
 
-rd.plot.p2n <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size) {
+rd.plot.p2n <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
   p2n <- list()
   if (statistics == FALSE | posthoc == "all to one") {
     for (i in GOIs) {
@@ -1062,7 +1080,7 @@ rd.plot.p2n <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
         ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
         ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
     }
-    if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
+    if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
       for (i in unique((rel.q.df %>% filter(p.value <= p))$Genes)) {
         p2n[[i]] <- p2n[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
@@ -1070,7 +1088,7 @@ rd.plot.p2n <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
         p2n[[i]] <- p2n[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
     }
-    if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
+    if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
       for (i in unique((rel.q.df %>% filter(p.value <= p))$Genes)) {
         p2n[[i]] <- p2n[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3 + 1)
       }
@@ -1080,9 +1098,13 @@ rd.plot.p2n <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
     }
   } else {
     for (i in GOIs) {
+      cc <- NULL
+      if (statistics == TRUE && nonorm == 0 && length(res.posthoc$Genes) != 0) {
+        cc <- max(subset(res.posthoc, Genes == i)$y2.lin)*1.025
+      }
       p2n[[i]] <- ggplot2::ggplot(subset(rel.q.df, Genes == i), ggplot2::aes(x=Samples, y=Rel.quant, colour=Samples)) +
         ggplot2::geom_boxplot() +
-        ggplot2::ylim(0, max(ceiling(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)*1.025), max(subset(res.posthoc, Genes == i)$y2.lin)*1.025)) +
+        ggplot2::ylim(0, max(ceiling(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)*1.025), cc)) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab("Relative expression") +
@@ -1093,12 +1115,12 @@ rd.plot.p2n <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
         ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
         ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
     }
-    if (statistics == TRUE && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
+    if (statistics == TRUE && nonorm == 0 && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
       for (i in unique(res.posthoc$Genes)) {
         p2n[[i]] <- p2n[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = paste0("p == ", p.val.exp), y_position = y2.lin), size = 0.25, textsize = font.size/3, colour = "gray20", vjust = 0.2, tip_length = 0.02, show.legend = FALSE, parse = TRUE, manual = TRUE)
       }
     }
-    if (statistics == TRUE && sign.repr == "asterisks"  && length(res.posthoc$Genes) != 0) {
+    if (statistics == TRUE && nonorm == 0 && sign.repr == "asterisks"  && length(res.posthoc$Genes) != 0) {
       for (i in unique(res.posthoc$Genes)) {
         p2n[[i]] <- p2n[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = asterisks, y_position = y2.lin), size = 0.25, textsize = font.size/3 + 1, colour = "gray20", vjust = 0.4, tip_length = 0.02, show.legend = FALSE, manual = TRUE)
       }
@@ -1113,7 +1135,7 @@ rd.plot.p2n <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
 }
 
 
-rd.plot.p4 <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size) {
+rd.plot.p4 <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
   p4 <- list()
   if (statistics == FALSE | posthoc == "all to one") {
     for (i in GOIs) {
@@ -1130,7 +1152,7 @@ rd.plot.p4 <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
         ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
         ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
     }
-    if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
+    if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
       for (i in unique((rel.q.log %>% filter(p.value <= p))$Genes)) {
         p4[[i]] <- p4[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
@@ -1138,7 +1160,7 @@ rd.plot.p4 <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
         p4[[i]] <- p4[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
     }
-    if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
+    if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
       for (i in unique((rel.q.log %>% filter(p.value <= p))$Genes)) {
         p4[[i]] <- p4[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3 + 1)
       }
@@ -1148,9 +1170,13 @@ rd.plot.p4 <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
     }
   } else {
     for (i in GOIs) {
+      cc <- NULL
+      if (statistics == TRUE && nonorm == 0 && length(res.posthoc$Genes) != 0) {
+        cc <- 1.025*max(subset(res.posthoc, Genes == i)$y2)
+      }
       p4[[i]] <-ggplot2::ggplot(subset(rel.q.log, Genes == i), ggplot2::aes(x=Samples, y=Rel.quant, colour=Samples, fill=Samples)) +
         ggbeeswarm::geom_beeswarm(cex = 2, size = 2, groupOnX = TRUE) +
-        ggplot2::ylim(floor(min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), max(ceiling(1.025*max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), 1.025*max(subset(res.posthoc, Genes == i)$y2))) +
+        ggplot2::ylim(floor(min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), max(ceiling(1.025*max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), cc)) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab(expression("log"[2]~"(relative expression)")) +
@@ -1161,12 +1187,12 @@ rd.plot.p4 <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
         ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
         ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
     }
-    if (statistics == TRUE && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
+    if (statistics == TRUE && nonorm == 0 && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
       for (i in unique(res.posthoc$Genes)) {
         p4[[i]] <- p4[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = paste0("p == ", p.val.exp), y_position = y2), size = 0.25, textsize = font.size/3, colour = "gray20", vjust = 0.2, tip_length = 0.02, show.legend = FALSE, parse = TRUE, manual = TRUE)
       }
     }
-    if (statistics == TRUE && sign.repr == "asterisks"  && length(res.posthoc$Genes) != 0) {
+    if (statistics == TRUE && nonorm == 0 && sign.repr == "asterisks"  && length(res.posthoc$Genes) != 0) {
       for (i in unique(res.posthoc$Genes)) {
         p4[[i]] <- p4[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = asterisks, y_position = y2), size = 0.25, textsize = font.size/3 + 1, colour = "gray20", vjust = 0.4, tip_length = 0.02, show.legend = FALSE, manual = TRUE)
       }
@@ -1180,7 +1206,7 @@ rd.plot.p4 <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
   return(p4.results)
 }
 
-rd.plot.p5 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size) {
+rd.plot.p5 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
   p5 <- list()
   if (statistics == FALSE | posthoc == "all to one") {
     for (i in GOIs) {
@@ -1198,7 +1224,7 @@ rd.plot.p5 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics
         ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
         ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
     }
-    if (statistics == TRUE && ref.sample %in% rel.q.mean.log$Samples && sign.repr == "values") {
+    if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean.log$Samples && sign.repr == "values") {
       for (i in unique((rel.q.mean.log %>% filter(p.value <= p))$Genes)) {
         p5[[i]] <- p5[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean.log, Genes == i & p.value <= p & p.value > .Machine$double.eps)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
@@ -1206,7 +1232,7 @@ rd.plot.p5 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics
         p5[[i]] <- p5[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = subset(rel.q.mean.log, Genes == i & p.value <= .Machine$double.eps)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
     }
-    if (statistics == TRUE && ref.sample %in% rel.q.mean.log$Samples && sign.repr == "asterisks") {
+    if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean.log$Samples && sign.repr == "asterisks") {
       for (i in unique((rel.q.mean.log %>% filter(p.value <= p))$Genes)) {
         p5[[i]] <- p5[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = subset(rel.q.mean.log, Genes == i & p.value <= p)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE)), colour = "gray20", size = font.size/3 + 1)
       }
@@ -1216,10 +1242,14 @@ rd.plot.p5 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics
     }
   } else {
     for (i in GOIs) {
+      cc <- NULL
+      if (statistics == TRUE && nonorm == 0 && length(res.posthoc$Genes) != 0) {
+        cc <- 1.025*max(subset(res.posthoc, Genes == i)$y4)
+      }
       p5[[i]] <- ggplot2::ggplot(subset(rel.q.mean.log, Genes == i), ggplot2::aes(x=Samples, y=Expression, colour=Samples, fill=Samples)) +
         ggplot2::geom_point(size=2) +
         ggplot2::geom_errorbar(aes(ymin=Expression-SD, ymax=Expression+SD), width=.2) +
-        ggplot2::ylim(floor(min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD)), max(ceiling(1.025*max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD)), 1.025*max(subset(res.posthoc, Genes == i)$y4))) +
+        ggplot2::ylim(floor(min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD)), max(ceiling(1.025*max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD)), cc)) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab(expression("log"[2]~"(relative expression)")) +
@@ -1230,12 +1260,12 @@ rd.plot.p5 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics
         ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
         ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
     }
-    if (statistics == TRUE && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
+    if (statistics == TRUE && nonorm == 0 && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
       for (i in unique(res.posthoc$Genes)) {
         p5[[i]] <- p5[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = paste0("p == ", p.val.exp), y_position = y4), size = 0.25, textsize = font.size/3, colour = "gray20", vjust = 0.2, tip_length = 0.02, show.legend = FALSE, parse = TRUE, manual = TRUE)
       }
     }
-    if (statistics == TRUE && sign.repr == "asterisks" && length(res.posthoc$Genes) != 0) {
+    if (statistics == TRUE && nonorm == 0 && sign.repr == "asterisks" && length(res.posthoc$Genes) != 0) {
       for (i in unique(res.posthoc$Genes)) {
         p5[[i]] <- p5[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = asterisks, y_position = y4), size = 0.25, textsize = font.size/3 + 1, colour = "gray20", vjust = 0.4, tip_length = 0.02, show.legend = FALSE, manual = TRUE)
       }
@@ -1249,7 +1279,7 @@ rd.plot.p5 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics
   return(p5.results)
 }
 
-rd.plot.p6 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size) {
+rd.plot.p6 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
 p6 <- list()
 if (statistics == FALSE | posthoc == "all to one") {
   for (i in GOIs) {
@@ -1266,7 +1296,7 @@ if (statistics == FALSE | posthoc == "all to one") {
     ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
     ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
   }
-  if (statistics == TRUE && ref.sample %in% rel.q.mean.log$Samples && sign.repr == "values") {
+  if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean.log$Samples && sign.repr == "values") {
     for (i in unique((rel.q.mean.log %>% filter(p.value <= p))$Genes)) {
       p6[[i]] <- p6[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = ifelse(subset(rel.q.mean.log, Genes == i & p.value <= p)$Expression < 0, -subset(rel.q.mean.log, Genes == i & p.value <= p)$SD - 0.05*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE)), subset(rel.q.mean.log, Genes == i & p.value <= p)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE))), colour = "gray20", size = font.size/3)
     }
@@ -1274,7 +1304,7 @@ if (statistics == FALSE | posthoc == "all to one") {
       p6[[i]] <- p6[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = ifelse(subset(rel.q.mean.log, Genes == i & p.value <= p)$Expression < 0, -subset(rel.q.mean.log, Genes == i & p.value <= p)$SD - 0.05*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE)), subset(rel.q.mean.log, Genes == i & p.value <= p)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE))), colour = "gray20", size = font.size/3)
     }
   }
-  if (statistics == TRUE && ref.sample %in% rel.q.mean.log$Samples && sign.repr == "asterisks") {
+  if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean.log$Samples && sign.repr == "asterisks") {
     for (i in unique((rel.q.mean.log %>% filter(p.value <= p))$Genes)) {
       p6[[i]] <- p6[[i]] + ggplot2::geom_text(data = rel.q.mean.log %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = ifelse(subset(rel.q.mean.log, Genes == i & p.value <= p)$Expression < 0, -subset(rel.q.mean.log, Genes == i & p.value <= p)$SD - 0.05*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE)), subset(rel.q.mean.log, Genes == i & p.value <= p)$SD + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE) - min(subset(rel.q.mean.log, Genes == i)$Expression, na.rm = TRUE))), colour = "gray20", size = font.size/3 + 1)
     }
@@ -1284,11 +1314,15 @@ if (statistics == FALSE | posthoc == "all to one") {
   }
 } else {
   for (i in GOIs) {
+    cc <- NULL
+    if (statistics == TRUE && nonorm == 0 && length(res.posthoc$Genes) != 0) {
+      cc <- 1.025*max(subset(res.posthoc, Genes == i)$y6)
+    }
     p6[[i]] <- ggplot2::ggplot(subset(rel.q.mean.log, Genes == i), ggplot2::aes(x=Samples, y=Expression, colour=Samples, fill=Samples)) +
       ggplot2::geom_col(position = "dodge") +
       ggplot2::geom_errorbar(aes(ymin=Expression-SD, ymax=Expression+SD), width=.2, position=position_dodge(.9), color="gray20") +
       # ggplot2::ylim(floor(min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD)), max(ceiling(max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD) + 0.025*(max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD) - min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD))), max(subset(res.posthoc, Genes == i)$y6) + 0.025*(max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD) - min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD)))) +
-      ggplot2::ylim(floor(min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD)), max(ceiling(1.025*max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD)), 1.025*max(subset(res.posthoc, Genes == i)$y6))) +
+      ggplot2::ylim(floor(min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD)), max(ceiling(1.025*max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD)), cc)) +
       ggplot2::theme_bw() +
       ggplot2::ggtitle(i) +
       ggplot2::ylab(expression("log"[2]~"(relative expression)")) +
@@ -1299,12 +1333,12 @@ if (statistics == FALSE | posthoc == "all to one") {
       ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
       ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
   }
-  if (statistics == TRUE && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
+  if (statistics == TRUE && nonorm == 0 && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
     for (i in unique(res.posthoc$Genes)) {
       p6[[i]] <- p6[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = paste0("p == ", p.val.exp), y_position = y6), size = 0.25, textsize = font.size/3, colour = "gray20", vjust = 0.2, tip_length = 0.02, show.legend = FALSE, parse = TRUE, manual = TRUE)
     }
   }
-  if (statistics == TRUE && sign.repr == "asterisks" && length(res.posthoc$Genes) != 0) {
+  if (statistics == TRUE && nonorm == 0 && sign.repr == "asterisks" && length(res.posthoc$Genes) != 0) {
     for (i in unique(res.posthoc$Genes)) {
       p6[[i]] <- p6[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = asterisks, y_position = y6), size = 0.25, textsize = font.size/3 + 1, colour = "gray20", vjust = 0.4, tip_length = 0.02, show.legend = FALSE, manual = TRUE)
     }
@@ -1318,7 +1352,7 @@ p6.results <- list("p6" = p6, "ml" = ml)
 return(p6.results)
 }
 
-rd.plot.p5n <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size) {
+rd.plot.p5n <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
 p5n <- list()
 if (statistics == FALSE | posthoc == "all to one") {
   for (i in GOIs) {
@@ -1335,7 +1369,7 @@ if (statistics == FALSE | posthoc == "all to one") {
       ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
       ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
   }
-  if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
+  if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
     for (i in unique((rel.q.log %>% filter(p.value <= p))$Genes)) {
       p5n[[i]] <- p5n[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
     }
@@ -1343,7 +1377,7 @@ if (statistics == FALSE | posthoc == "all to one") {
       p5n[[i]] <- p5n[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= .Machine$double.eps), ggplot2::aes(label = paste0("p <= ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
     }
   }
-  if (statistics == TRUE && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
+  if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
     for (i in unique((rel.q.log %>% filter(p.value <= p))$Genes)) {
       p5n[[i]] <- p5n[[i]] + ggplot2::geom_text(data = rel.q.log %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3 + 1)
     }
@@ -1353,9 +1387,13 @@ if (statistics == FALSE | posthoc == "all to one") {
   }
 } else {
   for (i in GOIs) {
+    cc <- NULL
+    if (statistics == TRUE && nonorm == 0 && length(res.posthoc$Genes) != 0) {
+      cc <- 1.025*max(subset(res.posthoc, Genes == i)$y2)
+    }
     p5n[[i]] <- ggplot2::ggplot(subset(rel.q.log, Genes == i), ggplot2::aes(x=Samples, y=Rel.quant, colour=Samples)) +
       ggplot2::geom_boxplot() +
-      ggplot2::ylim(floor(min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), max(ceiling(1.025*max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), 1.025*max(subset(res.posthoc, Genes == i)$y2))) +
+      ggplot2::ylim(floor(min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), max(ceiling(1.025*max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), cc)) +
       ggplot2::theme_bw() +
       ggplot2::ggtitle(i) +
       ggplot2::ylab(expression("log"[2]~"(relative expression)")) +
@@ -1366,12 +1404,12 @@ if (statistics == FALSE | posthoc == "all to one") {
       ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
       ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
   }
-  if (statistics == TRUE && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
+  if (statistics == TRUE && nonorm == 0 && sign.repr == "values" && length(res.posthoc$Genes) != 0) {
     for (i in unique(res.posthoc$Genes)) {
       p5n[[i]] <- p5n[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = paste0("p == ", p.val.exp), y_position = y2), size = 0.25, textsize = font.size/3, colour = "gray20", vjust = 0.2, tip_length = 0.02, show.legend = FALSE, parse = TRUE, manual = TRUE)
     }
   }
-  if (statistics == TRUE && sign.repr == "asterisks"  && length(res.posthoc$Genes) != 0) {
+  if (statistics == TRUE && nonorm == 0 && sign.repr == "asterisks"  && length(res.posthoc$Genes) != 0) {
     for (i in unique(res.posthoc$Genes)) {
       p5n[[i]] <- p5n[[i]] + ggsignif::geom_signif(data = res.posthoc %>% filter(Genes == i & p.value <= p), inherit.aes = FALSE, ggplot2::aes(xmin = Group1, xmax = Group2, annotations = asterisks, y_position = y2), size = 0.25, textsize = font.size/3 + 1, colour = "gray20", vjust = 0.4, tip_length = 0.02, show.legend = FALSE, manual = TRUE)
     }
@@ -1405,7 +1443,7 @@ return(save.tables)
 
 
 ## Print warning messages if any
-rd.warn <- function(ref.sample, rel.q.mean, noref.warn, statistics, posthoc, nostatref.warn, frw, few.repl.warn, rel.q.mean.log, missingref.warn) {
+rd.warn <- function(ref.sample, rel.q.mean, noref.warn, statistics, posthoc, nostatref.warn, frw, few.repl.warn, rel.q.mean.log, missingref.warn, nonorm, nonorm.warn) {
   warnings <- list()
   if ((ref.sample %in% rel.q.mean$Samples) == FALSE) {
     warnings[["noref.warn"]] <- noref.warn
@@ -1413,8 +1451,11 @@ rd.warn <- function(ref.sample, rel.q.mean, noref.warn, statistics, posthoc, nos
       warnings[["nostatref.warn"]] <- nostatref.warn
     } 
   } else {
-    if (sum(is.na(rel.q.mean.log[which(rel.q.mean.log$Samples == ref.sample),"Expression"])) > 0) {
+    if (nonorm == 0 && sum(is.na(rel.q.mean.log[which(rel.q.mean.log$Samples == ref.sample),"Expression"])) > 0) {
       warnings[["missingref.warn"]] <- missingref.warn
+    }
+    if (nonorm == 1) {
+      warnings[["nonorm.warn"]] <- nonorm.warn
     }
   }
   if (frw == 1) {

@@ -404,7 +404,7 @@ server <- function(input, output, session) {
   statistics.results.c <- reactive({rel.q.norm.results()})
   statistics.results <- reactive({
     req(statistics.results.c())
-    rd.statistics(rel.q.df = statistics.results.c()$rel.q.df, rel.q.log = statistics.results.c()$rel.q.log, rel.q.mean = rel.q.confint()$rel.q.mean, rel.q.mean.log = rel.q.confint()$rel.q.mean.log, statistics = input$statistics, test.type = input$test.type, posthoc = input$posthoc, ref.sample = statistics.results.c()$ref.sample, p = input$p, sp.f = input$sp.f)
+    rd.statistics(rel.q.df = statistics.results.c()$rel.q.df, rel.q.log = statistics.results.c()$rel.q.log, rel.q.mean = rel.q.confint()$rel.q.mean, rel.q.mean.log = rel.q.confint()$rel.q.mean.log, statistics = input$statistics, test.type = input$test.type, posthoc = input$posthoc, ref.sample = statistics.results.c()$ref.sample, nonorm = statistics.results.c()$nonorm, p = input$p, sp.f = input$sp.f)
   })
 
   # Plot relative expression dotplots in linear scale (for display in a web browser) ----
@@ -422,7 +422,7 @@ server <- function(input, output, session) {
         p1_i <- i
         plotname <- paste("p1.plot", p1_i, sep="")
         output[[plotname]] <- renderPlot({
-          rd.plot.p1(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4)$p1[[p1_i]]
+          rd.plot.p1(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p1[[p1_i]]
         })
       })
     }
@@ -444,7 +444,7 @@ server <- function(input, output, session) {
         plotname <- paste("p2.plot", p2_i, sep="")
         output[[plotname]] <- renderPlot({
           req(statistics.results(), input$test.type == "parametric")
-          rd.plot.p2(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4)$p2[[p2_i]]
+          rd.plot.p2(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p2[[p2_i]]
         })
       })
     }
@@ -466,7 +466,7 @@ server <- function(input, output, session) {
         plotname <- paste("p3.plot", p3_i, sep="")
         output[[plotname]] <- renderPlot({
           req(statistics.results(), input$test.type == "parametric")
-          rd.plot.p3(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4)$p3[[p3_i]]
+          rd.plot.p3(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p3[[p3_i]]
         })
       })
     }
@@ -488,7 +488,7 @@ server <- function(input, output, session) {
         plotname <- paste("p2n.plot", p2n_i, sep="")
         output[[plotname]] <- renderPlot({
           req(statistics.results(), input$test.type == "non-parametric")
-          rd.plot.p2n(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4)$p2n[[p2n_i]]
+          rd.plot.p2n(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p2n[[p2n_i]]
         })
       })
     }
@@ -523,7 +523,7 @@ server <- function(input, output, session) {
         p4_i <- i
         plotname <- paste("p4.plot", p4_i, sep="")
         output[[plotname]] <- renderPlot({
-          rd.plot.p4(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4)$p4[[p4_i]]
+          rd.plot.p4(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p4[[p4_i]]
         })
       })
     }
@@ -545,7 +545,7 @@ server <- function(input, output, session) {
         plotname <- paste("p5.plot", p5_i, sep="")
         output[[plotname]] <- renderPlot({
           req(statistics.results(), input$test.type == "parametric")
-          rd.plot.p5(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4)$p5[[p5_i]]
+          rd.plot.p5(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p5[[p5_i]]
         })
       })
     }
@@ -567,7 +567,7 @@ server <- function(input, output, session) {
         plotname <- paste("p6.plot", p6_i, sep="")
         output[[plotname]] <- renderPlot({
           req(statistics.results(), input$test.type == "parametric")
-          rd.plot.p6(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4)$p6[[p6_i]]
+          rd.plot.p6(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p6[[p6_i]]
         })
       })
     }
@@ -589,7 +589,7 @@ server <- function(input, output, session) {
         plotname <- paste("p5n.plot", p5n_i, sep="")
         output[[plotname]] <- renderPlot({
           req(statistics.results(), input$test.type == "non-parametric")
-          rd.plot.p5n(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4)$p5n[[p5n_i]]
+          rd.plot.p5n(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p5n[[p5n_i]]
         })
       })
     }
@@ -756,24 +756,24 @@ server <- function(input, output, session) {
 
   # Download dotplots  in linear scale ----
   p1.results <- reactive({
-    rd.plot.p1(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size)
+    rd.plot.p1(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
   })
 
   p2.results <- reactive({
     if (input$test.type == "parametric") {
-    rd.plot.p2(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size)
+    rd.plot.p2(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
     }
   })
 
   p3.results <- reactive({
     if (input$test.type == "parametric") {
-      rd.plot.p3(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size)
+      rd.plot.p3(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
     }
   })
 
   p2n.results <- reactive({
     if (input$test.type == "non-parametric") {
-      rd.plot.p2n(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size)
+      rd.plot.p2n(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
     }
   })
 
@@ -957,24 +957,24 @@ server <- function(input, output, session) {
 
   # Download dotplots  in logarithmic scale ----
   p4.results <- reactive({
-    rd.plot.p4(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size)
+    rd.plot.p4(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
   })
 
   p5.results <- reactive({
     if (input$test.type == "parametric") {
-      rd.plot.p5(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size)
+      rd.plot.p5(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
     }
   })
 
   p6.results <- reactive({
     if (input$test.type == "parametric") {
-      rd.plot.p6(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size)
+      rd.plot.p6(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
     }
   })
 
   p5n.results <- reactive({
     if (input$test.type == "non-parametric") {
-      rd.plot.p5n(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size)
+      rd.plot.p5n(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
     }
   })
 
@@ -1261,7 +1261,7 @@ server <- function(input, output, session) {
   
   ## Print warning messages if any
   warnings <- reactive({
-    rd.warn(ref.sample = statistics.results()$ref.sample, rel.q.mean = statistics.results()$rel.q.mean, noref.warn = "A valid name of a sample to be used as baseline reference was not provided! Calculated relative quantities are not normalized to a particular sample.", statistics = input$statistics, posthoc = input$posthoc, nostatref.warn = "A reference group for the Dunnett post-hoc test has not been chosen. Please check your input.", frw = statistics.results()$frw, few.repl.warn = statistics.results()$few.repl.warn, rel.q.mean.log = rel.q.results.log()$rel.q.mean.log, missingref.warn = "At least one of the genes of interest was not evaluated in the chosen reference sample! The respective plots will be empty and the result tables will not contain data for these genes. Choose a different reference sample or none to process and display all data.")
+    rd.warn(ref.sample = statistics.results()$ref.sample, rel.q.mean = statistics.results()$rel.q.mean, noref.warn = "A valid name of a sample to be used as baseline reference was not provided! Calculated relative quantities are not normalized to a particular sample.", statistics = input$statistics, posthoc = input$posthoc, nostatref.warn = "A reference group for the Dunnett post-hoc test has not been chosen. Please check your input.", frw = statistics.results()$frw, few.repl.warn = statistics.results()$few.repl.warn, rel.q.mean.log = rel.q.results.log()$rel.q.mean.log, missingref.warn = "At least one of the genes of interest was not evaluated in the chosen reference sample! The respective plots will be empty and the result tables will not contain data for these genes. Choose a different reference sample or none to process and display all data.", nonorm = rel.q.norm.results()$nonorm, nonorm.warn = "The chosen reference sample had missing data for one or more genes of interest! Statistical tests have not been performed! Please choose a different reference sample or none.")
   })
 
   observeEvent(warnings()$noref.warn, {
@@ -1274,6 +1274,10 @@ server <- function(input, output, session) {
   
   observeEvent(warnings()$missingref.warn, {
     shinyalert("Warning!", warnings()$missingref.warn, type = "warning")
+  })
+  
+  observeEvent(warnings()$nonorm.warn, {
+    shinyalert("Warning!", warnings()$nonorm.warn, type = "warning")
   })
 
   observeEvent(warnings()$few.repl.warn, {

@@ -104,6 +104,8 @@ rel.q.norm.results <- c(rel.q.results, rel.q.results.log)
 rel.q.norm.results <- rd.normalize(rel.q.detailed = rel.q.norm.results$rel.q.detailed, rel.q.detailed.log = rel.q.norm.results$rel.q.detailed.log, rel.q.df = rel.q.norm.results$rel.q.df, rel.q.log = rel.q.norm.results$rel.q.log, rel.q.mean = rel.q.norm.results$rel.q.mean, rel.q.mean.log = rel.q.norm.results$rel.q.mean.log, ref.sample = ref.sample, GOIs = GOIs)
 noref.warn <- c("A valid name of a sample to be used as baseline reference was not provided! Calculated relative quantities are not normalized to a particular sample.\n")
 missingref.warn <- c("At least one of the genes of interest was not evaluated in the chosen reference sample! The respective plots will be empty and the result tables will not contain data for these genes. Choose a different reference sample or none to process and display all data.\n")
+nonorm.warn <- c("The chosen reference sample had missing data for one or more genes of interest! Statistical tests have not been performed! Please choose a different reference sample or none.\n")
+
 
 ## Calculate confidence intervals
 rel.q.confint <- rd.confint(rel.q.mean = rel.q.norm.results$rel.q.mean, rel.q.mean.log = rel.q.norm.results$rel.q.mean.log, p = alpha)
@@ -112,11 +114,11 @@ rel.q.confint <- rd.confint(rel.q.mean = rel.q.norm.results$rel.q.mean, rel.q.me
 statistics.results <- rel.q.norm.results
 statistics.results$rel.q.mean <- rel.q.confint$rel.q.mean
 statistics.results$rel.q.mean.log <- rel.q.confint$rel.q.mean.log
-statistics.results <- rd.statistics(rel.q.df = statistics.results$rel.q.df, rel.q.log = statistics.results$rel.q.log, rel.q.mean = statistics.results$rel.q.mean, rel.q.mean.log = statistics.results$rel.q.mean.log, statistics = statistics, test.type = test.type, posthoc = posthoc, ref.sample = statistics.results$ref.sample, p = alpha, sp.f = sp.f)
+statistics.results <- rd.statistics(rel.q.df = statistics.results$rel.q.df, rel.q.log = statistics.results$rel.q.log, rel.q.mean = statistics.results$rel.q.mean, rel.q.mean.log = statistics.results$rel.q.mean.log, statistics = statistics, test.type = test.type, posthoc = posthoc, ref.sample = statistics.results$ref.sample, nonorm = statistics.results$nonorm, p = alpha, sp.f = sp.f)
 nostatref.warn <- c("A reference group for the Dunnett post-hoc test has not been chosen. Please check your input.\n")
 
 ## Plot relative expression
-p1.results <- rd.plot.p1(rel.q.df = statistics.results$rel.q.df, rel.q.mean = statistics.results$rel.q.mean, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size)
+p1.results <- rd.plot.p1(rel.q.df = statistics.results$rel.q.df, rel.q.mean = statistics.results$rel.q.mean, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size, nonorm = rel.q.norm.results$nonorm)
 if (plot.format == "both" | plot.format == "PDF") {
   ggplot2::ggsave(paste0(gsub(".csv", "", input.table), "_relative_expression_dotplot.pdf"), width = 210, height =  297, units = "mm", p1.results$ml)
 }
@@ -126,14 +128,14 @@ if (plot.format == "both" | plot.format == "PNG") {
 rm(p1.results)
 
 if (test.type == "parametric") {
-  p2.results <- rd.plot.p2(rel.q.mean = statistics.results$rel.q.mean, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size)
+  p2.results <- rd.plot.p2(rel.q.mean = statistics.results$rel.q.mean, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size, nonorm = rel.q.norm.results$nonorm)
 if (plot.format == "both" | plot.format == "PDF") {
     ggplot2::ggsave(paste0(gsub(".csv", "", input.table), "_relative_expression_dotplot_CI.pdf"), width = 210, height =  297, units = "mm", p2.results$ml)
   }
   if (plot.format == "both" | plot.format == "PNG") {
     png.plot.2(ggplot.object = p2.results$p2, fname = input.table, type.name = "relative_expression_dotplot_CI", png.size = png.size, png.dpi = png.dpi)
   }
-  p3.results <- rd.plot.p3(rel.q.mean = statistics.results$rel.q.mean, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size)
+  p3.results <- rd.plot.p3(rel.q.mean = statistics.results$rel.q.mean, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size, nonorm = rel.q.norm.results$nonorm)
   if (plot.format == "both" | plot.format == "PDF") {
     ggplot2::ggsave(paste0(gsub(".csv", "", input.table), "_relative_expression_bar_graph.pdf"), width = 210, height =  297, units = "mm", p3.results$ml)
   }
@@ -145,7 +147,7 @@ if (plot.format == "both" | plot.format == "PDF") {
 }
 
 if (test.type == "non-parametric") {
-  p2n.results <- rd.plot.p2n(rel.q.df = statistics.results$rel.q.df, rel.q.mean = statistics.results$rel.q.mean, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size)
+  p2n.results <- rd.plot.p2n(rel.q.df = statistics.results$rel.q.df, rel.q.mean = statistics.results$rel.q.mean, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size, nonorm = rel.q.norm.results$nonorm)
   if (plot.format == "both" | plot.format == "PDF") {
     ggplot2::ggsave(paste0(gsub(".csv", "", input.table), "_relative_expression_boxplot.pdf"), width = 210, height =  297, units = "mm", p2n.results$ml)
   }
@@ -155,7 +157,7 @@ if (test.type == "non-parametric") {
   rm(p2n.results)
 }
 
-p4.results <- rd.plot.p4(rel.q.log = statistics.results$rel.q.log, rel.q.mean = statistics.results$rel.q.mean, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size)
+p4.results <- rd.plot.p4(rel.q.log = statistics.results$rel.q.log, rel.q.mean = statistics.results$rel.q.mean, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size, nonorm = rel.q.norm.results$nonorm)
 if (plot.format == "both" | plot.format == "PDF") {
   ggplot2::ggsave(paste0(gsub(".csv", "", input.table), "_relative_log_expression_dotplot.pdf"), width = 210, height =  297, units = "mm", p4.results$ml)
 }
@@ -165,14 +167,14 @@ if (plot.format == "both" | plot.format == "PNG") {
 rm(p4.results)
 
 if (test.type == "parametric") {
-  p5.results <- rd.plot.p5(rel.q.mean.log = statistics.results$rel.q.mean.log, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size)
+  p5.results <- rd.plot.p5(rel.q.mean.log = statistics.results$rel.q.mean.log, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size, nonorm = rel.q.norm.results$nonorm)
   if (plot.format == "both" | plot.format == "PDF") {
     ggplot2::ggsave(paste0(gsub(".csv", "", input.table), "_relative_log_expression_dotplot_SD.pdf"), width = 210, height =  297, units = "mm", p5.results$ml)
   }
   if (plot.format == "both" | plot.format == "PNG") {
     png.plot.2(ggplot.object = p5.results$p5, fname = input.table, type.name = "relative_log_expression_dotplot_SD", png.size = png.size, png.dpi = png.dpi)
   }
-  p6.results <- rd.plot.p6(rel.q.mean.log = statistics.results$rel.q.mean.log, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size)
+  p6.results <- rd.plot.p6(rel.q.mean.log = statistics.results$rel.q.mean.log, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size, nonorm = rel.q.norm.results$nonorm)
   if (plot.format == "both" | plot.format == "PDF") {
     ggplot2::ggsave(paste0(gsub(".csv", "", input.table), "_relative_log_expression_bar_graph.pdf"), width = 210, height =  297, units = "mm", p6.results$ml)
   }
@@ -184,7 +186,7 @@ if (test.type == "parametric") {
 }
 
 if (test.type == "non-parametric") {
-  p5n.results <- rd.plot.p5n(rel.q.log = statistics.results$rel.q.log, rel.q.mean = statistics.results$rel.q.mean, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size)
+  p5n.results <- rd.plot.p5n(rel.q.log = statistics.results$rel.q.log, rel.q.mean = statistics.results$rel.q.mean, res.posthoc = statistics.results$res.posthoc, ref.sample = statistics.results$ref.sample, GOIs = GOIs, statistics = statistics.results$statistics, posthoc = posthoc, sign.repr = sign.repr, p = alpha, stat.test = statistics.results$stat.test, font.size = font.size, nonorm = rel.q.norm.results$nonorm)
   if (plot.format == "both" | plot.format == "PDF") {
     ggplot2::ggsave(paste0(gsub(".csv", "", input.table), "_relative_log_expression_boxplot.pdf"), width = 210, height =  297, units = "mm", p5n.results$ml)
   }
@@ -198,5 +200,5 @@ if (test.type == "non-parametric") {
 save.tables <- rd.save.tables(input.table = input.table, rel.q.detailed = rel.q.norm.results$rel.q.detailed, rel.q.detailed.log = rel.q.norm.results$rel.q.detailed.log, rel.q.mean = statistics.results$rel.q.mean, rel.q.mean.log = statistics.results$rel.q.mean.log, p = alpha)
 
 ## Print warning messages if any
-rd.warnings <- rd.warn(ref.sample = statistics.results$ref.sample, rel.q.mean = statistics.results$rel.q.mean, noref.warn = noref.warn, statistics = statistics.results$statistics, posthoc = posthoc, nostatref.warn = nostatref.warn, frw = statistics.results$frw, few.repl.warn = statistics.results$few.repl.warn, rel.q.mean.log = rel.q.results.log$rel.q.mean.log, missingref.warn = missingref.warn)
+rd.warnings <- rd.warn(ref.sample = statistics.results$ref.sample, rel.q.mean = statistics.results$rel.q.mean, noref.warn = noref.warn, statistics = statistics.results$statistics, posthoc = posthoc, nostatref.warn = nostatref.warn, frw = statistics.results$frw, few.repl.warn = statistics.results$few.repl.warn, rel.q.mean.log = rel.q.results.log$rel.q.mean.log, missingref.warn = missingref.warn, nonorm = rel.q.norm.results$nonorm, nonorm.warn = nonorm.warn)
 
