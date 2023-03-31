@@ -198,5 +198,5 @@ if (test.type == "non-parametric") {
 save.tables <- rd.save.tables(input.table = input.table, rel.q.detailed = rel.q.norm.results$rel.q.detailed, rel.q.detailed.log = rel.q.norm.results$rel.q.detailed.log, rel.q.mean = statistics.results$rel.q.mean, rel.q.mean.log = statistics.results$rel.q.mean.log, p = alpha)
 
 ## Print warning messages if any
-rd.warnings <- rd.warn(ref.sample = statistics.results$ref.sample, rel.q.mean = statistics.results$rel.q.mean, noref.warn = noref.warn, statistics = statistics.results$statistics, posthoc = posthoc, nostatref.warn = nostatref.warn, frw = statistics.results$frw, few.repl.warn = statistics.results$few.repl.warn, GOIs = GOIs, qPCR = qPCR, missingref.warn = missingref.warn)
+rd.warnings <- rd.warn(ref.sample = statistics.results$ref.sample, rel.q.mean = statistics.results$rel.q.mean, noref.warn = noref.warn, statistics = statistics.results$statistics, posthoc = posthoc, nostatref.warn = nostatref.warn, frw = statistics.results$frw, few.repl.warn = statistics.results$few.repl.warn, rel.q.mean.log = rel.q.results.log$rel.q.mean.log, missingref.warn = missingref.warn)
 

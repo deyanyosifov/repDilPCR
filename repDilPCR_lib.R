@@ -1405,7 +1405,7 @@ return(save.tables)
 
 
 ## Print warning messages if any
-rd.warn <- function(ref.sample, rel.q.mean, noref.warn, statistics, posthoc, nostatref.warn, frw, few.repl.warn, GOIs, qPCR, missingref.warn) {
+rd.warn <- function(ref.sample, rel.q.mean, noref.warn, statistics, posthoc, nostatref.warn, frw, few.repl.warn, rel.q.mean.log, missingref.warn) {
   warnings <- list()
   if ((ref.sample %in% rel.q.mean$Samples) == FALSE) {
     warnings[["noref.warn"]] <- noref.warn
@@ -1413,7 +1413,7 @@ rd.warn <- function(ref.sample, rel.q.mean, noref.warn, statistics, posthoc, nos
       warnings[["nostatref.warn"]] <- nostatref.warn
     } 
   } else {
-    if (sum(is.na(qPCR[ref.sample,GOIs])) > 0) {
+    if (sum(is.na(rel.q.mean.log[which(rel.q.mean.log$Samples == ref.sample),"Expression"])) > 0) {
       warnings[["missingref.warn"]] <- missingref.warn
     }
   }
