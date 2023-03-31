@@ -633,8 +633,10 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
       rel.q.mean <- cbind(rel.q.mean, rel.q.mean.log[,c("p.value", "p.val.exp", "asterisks")])
       # colnames(rel.q.mean.log) <- c("Genes", "Samples", "Expression", "SD", "p.value", "p.val.exp", "asterisks")
     }
-    for (k in 1:max(rel.q.df$Pairs)) {
-     t.pairs[[k]] <- unique(subset(rel.q.df, Pairs == k)$Samples)
+    if (is.na(max(rel.q.df$Pairs)) == FALSE) {
+      for (k in 1:max(rel.q.df$Pairs)) {
+        t.pairs[[k]] <- unique(subset(rel.q.df, Pairs == k)$Samples)
+      }
     }
     if (posthoc == "all pairs" | posthoc == "selected pairs") {
       for (i in unique(rel.q.log$Genes)) {

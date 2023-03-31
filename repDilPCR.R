@@ -103,7 +103,7 @@ rel.q.results.log <- rd.log(rel.q.detailed = rel.q.results$rel.q.detailed, rel.q
 rel.q.norm.results <- c(rel.q.results, rel.q.results.log)
 rel.q.norm.results <- rd.normalize(rel.q.detailed = rel.q.norm.results$rel.q.detailed, rel.q.detailed.log = rel.q.norm.results$rel.q.detailed.log, rel.q.df = rel.q.norm.results$rel.q.df, rel.q.log = rel.q.norm.results$rel.q.log, rel.q.mean = rel.q.norm.results$rel.q.mean, rel.q.mean.log = rel.q.norm.results$rel.q.mean.log, ref.sample = ref.sample, GOIs = GOIs)
 noref.warn <- c("A valid name of a sample to be used as baseline reference was not provided! Calculated relative quantities are not normalized to a particular sample.\n")
-missingref.warn <- c("At least one of the genes of interest was not evaluated in the chosen reference sample! The respective plots will be empty and the result tables will not contain data for these genes. Choose a different reference sample or none to process and display all data.\n")
+missingref.warn <- c("The chosen reference sample had missing data for one or more genes of interest! The respective plots will be empty and the result tables will not contain data for these genes. Choose a different reference sample or none to process and display all data.\n")
 nonorm.warn <- c("The chosen reference sample had missing data for one or more genes of interest! Statistical tests have not been performed! Please choose a different reference sample or none.\n")
 
 
