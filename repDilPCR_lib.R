@@ -594,9 +594,10 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
             rownames(res.posthoc[[i]]) <- levels(rel.q.log$Samples)[2]
           }
         }
-        res.posthoc[[i]]$Genes <- i
-        res.posthoc[[i]]$Comparisons <- rownames(res.posthoc[[i]])
-        if (is.data.frame(res.posthoc[[i]]) == FALSE) {
+        if (is.data.frame(res.posthoc[[i]]) == TRUE && length(res.posthoc[[i]]) > 0) {
+          res.posthoc[[i]]$Genes <- i
+          res.posthoc[[i]]$Comparisons <- rownames(res.posthoc[[i]])
+        } else {
           res.posthoc[[i]] <- NULL
         }
         # for (j in 1:nrow(res.posthoc[[i]])) {
