@@ -746,6 +746,12 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
           res.posthoc[which(res.posthoc$Genes == i), "y1.lin"] <- seq(min(res.posthoc[which(res.posthoc$Genes == i), "y.lin"], na.rm = TRUE), ceiling(mx.lin[i] + 0.1*span.lin[i]), length.out = nrow(res.posthoc[which(res.posthoc$Genes == i),]))
           un.diff[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y1"][2] - res.posthoc[which(res.posthoc$Genes == i), "y1"][1])
           un.diff.lin[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y1.lin"][2] - res.posthoc[which(res.posthoc$Genes == i), "y1.lin"][1])
+          if (un.diff[i]/span < 0.02) {
+            un.diff[i] <- un.diff[i]*span
+          }
+          if (un.diff.lin[i]/span.lin < 0.02) {
+            un.diff.lin[i] <- un.diff.lin[i]*span.lin
+          }
           res.posthoc[which(res.posthoc$Genes == i), "y2"] <- res.posthoc[which(res.posthoc$Genes == i), "y"]
           res.posthoc[which(res.posthoc$Genes == i), "y2.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y.lin"]
           for (j in 2:nrow(res.posthoc[which(res.posthoc$Genes == i),])) {
@@ -758,8 +764,15 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
           }
           res.posthoc[which(res.posthoc$Genes == i), "y3"] <- seq(min(res.posthoc[which(res.posthoc$Genes == i), "y.s"]), ceiling(mx[i] + 0.1*span[i]), length.out = nrow(res.posthoc[which(res.posthoc$Genes == i),]))
           res.posthoc[which(res.posthoc$Genes == i), "y3.lin"] <- seq(min(res.posthoc[which(res.posthoc$Genes == i), "y.s.lin"]), ceiling(mx.lin[i] + 0.1*span.lin[i]), length.out = nrow(res.posthoc[which(res.posthoc$Genes == i),]))
+          res.posthoc[which(res.posthoc$Genes == i), "y3.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y3.lin"][order(res.posthoc[which(res.posthoc$Genes == i), "y3.lin"], decreasing = FALSE)]
           un.diff.b[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y3"][2] - res.posthoc[which(res.posthoc$Genes == i), "y3"][1])
           un.diff.b.lin[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y3.lin"][2] - res.posthoc[which(res.posthoc$Genes == i), "y3.lin"][1])
+          if (un.diff.b[i]/span < 0.02) {
+            un.diff.b[i] <- un.diff.b[i]*span
+          }
+          if (un.diff.b.lin[i]/span.lin < 0.02) {
+            un.diff.b.lin[i] <- un.diff.b.lin[i]*span.lin
+          }
           res.posthoc[which(res.posthoc$Genes == i), "y4"] <- res.posthoc[which(res.posthoc$Genes == i), "y.s"]
           res.posthoc[which(res.posthoc$Genes == i), "y4.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y.s.lin"]
           for (k in 2:nrow(res.posthoc[which(res.posthoc$Genes == i),])) {
@@ -768,8 +781,15 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
           }
           res.posthoc[which(res.posthoc$Genes == i), "y5"] <- seq(max(0, min(res.posthoc[which(res.posthoc$Genes == i), "y.s"])), ceiling(max(0.5, mx[i]) + 0.1*span[i]), length.out = nrow(res.posthoc[which(res.posthoc$Genes == i),]))
           res.posthoc[which(res.posthoc$Genes == i), "y5.lin"] <- seq(max(0, min(res.posthoc[which(res.posthoc$Genes == i), "y.s.lin"])), ceiling(max(0.5, mx.lin[i]) + 0.1*span.lin[i]), length.out = nrow(res.posthoc[which(res.posthoc$Genes == i),]))
+          res.posthoc[which(res.posthoc$Genes == i), "y5.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y5.lin"][order(res.posthoc[which(res.posthoc$Genes == i), "y5.lin"], decreasing = FALSE)]
           un.diff.c[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y5"][2] - res.posthoc[which(res.posthoc$Genes == i), "y5"][1])
           un.diff.c.lin[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y5.lin"][2] - res.posthoc[which(res.posthoc$Genes == i), "y5.lin"][1])
+          if (un.diff.c[i]/span < 0.02) {
+            un.diff.c[i] <- un.diff.c[i]*span
+          }
+          if (un.diff.c.lin[i]/span.lin < 0.02) {
+            un.diff.c.lin[i] <- un.diff.c.lin[i]*span.lin
+          }
           res.posthoc[which(res.posthoc$Genes == i), "y6"] <- res.posthoc[which(res.posthoc$Genes == i), "y.s"]
           res.posthoc[which(res.posthoc$Genes == i), "y6.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y.s.lin"]
           res.posthoc[which(res.posthoc$Genes == i), "y6"][1] <- max(0.5, res.posthoc[which(res.posthoc$Genes == i), "y6"][1])
@@ -778,6 +798,7 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
             res.posthoc[which(res.posthoc$Genes == i), "y6"][l] <- max(res.posthoc[which(res.posthoc$Genes == i), "y6"][l], res.posthoc[which(res.posthoc$Genes == i), "y6"][l-1] + un.diff.c[i])
             res.posthoc[which(res.posthoc$Genes == i), "y6.lin"][l] <- max(res.posthoc[which(res.posthoc$Genes == i), "y6.lin"][l], res.posthoc[which(res.posthoc$Genes == i), "y6.lin"][l-1] + un.diff.c.lin[i])
           }
+          res.posthoc[which(res.posthoc$Genes == i), "y6.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y6.lin"][order(res.posthoc[which(res.posthoc$Genes == i), "y6.lin"], decreasing = FALSE)]
         } else {
           res.posthoc[which(res.posthoc$Genes == i), "y2"] <- res.posthoc[which(res.posthoc$Genes == i), "y1"] <- res.posthoc[which(res.posthoc$Genes == i), "y"]
           res.posthoc[which(res.posthoc$Genes == i), "y2.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y1.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y.lin"]
