@@ -822,11 +822,11 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
     if (posthoc == "all to one" && ref.sample %in% rel.q.mean$Samples) {
       for (i in unique(rel.q.log$Genes)) {
         if (length(unique(as.character(rel.q.log$Samples))) > 2) {
-          if (test.type == "parametric" && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] > 0.05 && summary(res.aov[[i]])[[1]]$"Pr(>F)"[1] <= p) {
+          if (test.type == "parametric" && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] > 0.05 && summary(res.aov[[i]])[[1]]$"Pr(>F)"[1] <= 1) { #change "<= 1" to "<= p" to display the name of the test and the results only when the p value is significant
             # stat.test[[i]] <- signif(summary(res.aov[[i]])[[1]]$"Pr(>F)"[1], digits = 2)
             stat.test[[i]] <- paste0("Statistical test(s): one-way ANOVA (p = ", signif(summary(res.aov[[i]])[[1]]$"Pr(>F)"[1], digits = 2),"), ", gsub("\t\n *", " ", res.all.to.one[[i]]$method))
           }
-          if (test.type == "parametric" && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] <= 0.05 && oneway.test(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i), var.equal = FALSE)$p.value <= p) {
+          if (test.type == "parametric" && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] <= 0.05 && oneway.test(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i), var.equal = FALSE)$p.value <= 1) { #change "<= 1" to "<= p" to display the name of the test and the results only when the p value is significant
             stat.test[[i]] <- paste0("Statistical test(s): Welch's ANOVA (p = ", signif(oneway.test(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i), var.equal = FALSE)$p.value, digits = 2),"), ", gsub("\t\n *", " ", res.all.to.one[[i]]$method))
             # stat.test[[i]] <- signif(summary(res.aov[[i]])[[1]]$"Pr(>F)"[1], digits = 2)
           }
@@ -840,10 +840,10 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
     }
     if (posthoc == "all pairs") {
       for (i in unique(rel.q.log$Genes)) {
-        if (test.type == "parametric" && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] > 0.05 && summary(res.aov[[i]])[[1]]$"Pr(>F)"[1] <= p) {
+        if (test.type == "parametric" && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] > 0.05 && summary(res.aov[[i]])[[1]]$"Pr(>F)"[1] <= 1) { #change "<= 1" to "<= p" to display the name of the test and the results only when the p value is significant
           stat.test[[i]] <- paste0("Statistical test(s): one-way ANOVA (p = ", signif(summary(res.aov[[i]])[[1]]$"Pr(>F)"[1], digits = 2),"), ", gsub("\n\t\t", " ", res.pairs[[i]]$method))
         }
-        if (test.type == "parametric" && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] <= 0.05 && oneway.test(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i), var.equal = FALSE)$p.value <= p) {
+        if (test.type == "parametric" && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] <= 0.05 && oneway.test(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i), var.equal = FALSE)$p.value <= 1) { #change "<= 1" to "<= p" to display the name of the test and the results only when the p value is significant
           stat.test[[i]] <- paste0("Statistical test(s): Welch's ANOVA (p = ", signif(oneway.test(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i), var.equal = FALSE)$p.value, digits = 2),"), ", gsub("\n\t\t", " ", res.pairs[[i]]$method))
         }
         if (test.type == "non-parametric") {
@@ -853,10 +853,10 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
     }
     if (posthoc == "selected pairs") {
       for (i in unique(rel.q.log$Genes)) {
-        if (test.type == "parametric" && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] > 0.05 && summary(res.aov[[i]])[[1]]$"Pr(>F)"[1] <= p) {
+        if (test.type == "parametric" && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] > 0.05 && summary(res.aov[[i]])[[1]]$"Pr(>F)"[1] <= 1) { #change "<= 1" to "<= p" to display the name of the test and the results only when the p value is significant
           stat.test[[i]] <- paste0("Statistical test(s): one-way ANOVA (p = ", signif(summary(res.aov[[i]])[[1]]$"Pr(>F)"[1], digits = 2),"), pairwise ", gsub("\n\t\t", " ", res.pairs[[i]]$method))
         }
-        if (test.type == "parametric" && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] <= 0.05 && oneway.test(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i), var.equal = FALSE)$p.value <= p) {
+        if (test.type == "parametric" && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] <= 0.05 && oneway.test(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i), var.equal = FALSE)$p.value <= 1) { #change "<= 1" to "<= p" to display the name of the test and the results only when the p value is significant
           stat.test[[i]] <- paste0("Statistical test(s): Welch's ANOVA (p = ", signif(oneway.test(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i), var.equal = FALSE)$p.value, digits = 2),"), pairwise ", gsub("\n\t\t", " ", res.pairs[[i]]$method))
         }
         if (test.type == "non-parametric") {
