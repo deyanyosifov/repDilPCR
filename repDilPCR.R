@@ -1,7 +1,7 @@
 ## Title: repDilPCR - an R Script to Analyze qPCR Data by the Dilution-replicate Method
 ## File name: repDilPCR_CLI.R
-## Version: 1.0.7
-## Date: 2023-03-30
+## Version: 1.0.8
+## Date: 2023-04-04
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
