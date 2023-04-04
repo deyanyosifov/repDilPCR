@@ -544,6 +544,8 @@ rd.confint <- function(rel.q.mean, rel.q.mean.log, p) {
 rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, statistics, test.type, posthoc, ref.sample, nonorm, p, sp.f) {
   frw <- 0
   few.repl.warn <- c()
+  sel.pairs.warn <- c()
+  sel.pairs <- TRUE
   if (statistics == TRUE && min(table(rel.q.df$Samples))/length(unique(rel.q.df$Genes)) < 3) {
     statistics <- FALSE
     few.repl.warn <- "At least one of the groups contains too few replicates and it is not possible to perform statistical tests.\n"
@@ -638,6 +640,9 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
       for (k in 1:max(rel.q.df$Pairs)) {
         t.pairs[[k]] <- unique(subset(rel.q.df, Pairs == k)$Samples)
       }
+    } else {
+      sel.pairs.warn <- "No pairs have been defined for use with a paired statistical test! Please define pairs in the input data file or choose another statistical test.\n"
+      sel.pairs <- FALSE
     }
     if (posthoc == "all pairs" | posthoc == "selected pairs") {
       for (i in unique(rel.q.log$Genes)) {
@@ -853,19 +858,19 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
     }
     if (posthoc == "selected pairs") {
       for (i in unique(rel.q.log$Genes)) {
-        if (test.type == "parametric" && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] > 0.05 && summary(res.aov[[i]])[[1]]$"Pr(>F)"[1] <= 1) { #change "<= 1" to "<= p" to display the name of the test and the results only when the p value is significant
+        if (test.type == "parametric" && is.na(max(rel.q.df$Pairs)) == FALSE && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] > 0.05 && summary(res.aov[[i]])[[1]]$"Pr(>F)"[1] <= 1) { #change "<= 1" to "<= p" to display the name of the test and the results only when the p value is significant
           stat.test[[i]] <- paste0("Statistical test(s): one-way ANOVA (p = ", signif(summary(res.aov[[i]])[[1]]$"Pr(>F)"[1], digits = 2),"), pairwise ", gsub("\n\t\t", " ", res.pairs[[i]]$method))
         }
-        if (test.type == "parametric" && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] <= 0.05 && oneway.test(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i), var.equal = FALSE)$p.value <= 1) { #change "<= 1" to "<= p" to display the name of the test and the results only when the p value is significant
+        if (test.type == "parametric" && is.na(max(rel.q.df$Pairs)) == FALSE && car::leveneTest(res.aov[[i]])$"Pr(>F)"[1] <= 0.05 && oneway.test(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i), var.equal = FALSE)$p.value <= 1) { #change "<= 1" to "<= p" to display the name of the test and the results only when the p value is significant
           stat.test[[i]] <- paste0("Statistical test(s): Welch's ANOVA (p = ", signif(oneway.test(Rel.quant ~ Samples, data = subset(rel.q.log, Genes == i), var.equal = FALSE)$p.value, digits = 2),"), pairwise ", gsub("\n\t\t", " ", res.pairs[[i]]$method))
         }
-        if (test.type == "non-parametric") {
+        if (test.type == "non-parametric" && is.na(max(rel.q.df$Pairs)) == FALSE) {
           stat.test[[i]] <- paste0("Statistical test(s): pairwise ", gsub("\n\t\t", " ", res.pairs[[i]]$method))
         }
       }
     }
   }
-  statistics.results <- list("rel.q.df" = rel.q.df, "rel.q.mean" = rel.q.mean, "rel.q.log" = rel.q.log, "rel.q.mean.log" = rel.q.mean.log, "res.posthoc" = res.posthoc, "ref.sample" = ref.sample, "statistics" = statistics, "stat.test" = stat.test, "frw" = frw, "few.repl.warn" = few.repl.warn)
+  statistics.results <- list("rel.q.df" = rel.q.df, "rel.q.mean" = rel.q.mean, "rel.q.log" = rel.q.log, "rel.q.mean.log" = rel.q.mean.log, "res.posthoc" = res.posthoc, "ref.sample" = ref.sample, "statistics" = statistics, "stat.test" = stat.test, "frw" = frw, "few.repl.warn" = few.repl.warn, "sel.pairs" = sel.pairs, "sel.pairs.warn" = sel.pairs.warn)
   return(statistics.results)
 }
 
@@ -1467,7 +1472,7 @@ return(save.tables)
 
 
 ## Print warning messages if any
-rd.warn <- function(ref.sample, rel.q.mean, noref.warn, statistics, posthoc, nostatref.warn, frw, few.repl.warn, rel.q.mean.log, missingref.warn, nonorm, nonorm.warn) {
+rd.warn <- function(ref.sample, rel.q.mean, noref.warn, statistics, posthoc, nostatref.warn, frw, few.repl.warn, rel.q.mean.log, missingref.warn, nonorm, nonorm.warn, sel.pairs, sel.pairs.warn) {
   warnings <- list()
   if ((ref.sample %in% rel.q.mean$Samples) == FALSE) {
     warnings[["noref.warn"]] <- noref.warn
@@ -1484,6 +1489,9 @@ rd.warn <- function(ref.sample, rel.q.mean, noref.warn, statistics, posthoc, nos
   }
   if (frw == 1) {
     warnings[["few.repl.warn"]] <- few.repl.warn
+  }
+  if (posthoc == "selected pairs" && sel.pairs == FALSE) {
+    warnings[["sel.pairs.warn"]] <- sel.pairs.warn
   }
   if (length(warnings) != 0) {
     warning(warnings)

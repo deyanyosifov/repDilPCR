@@ -1261,7 +1261,7 @@ server <- function(input, output, session) {
   
   ## Print warning messages if any
   warnings <- reactive({
-    rd.warn(ref.sample = statistics.results()$ref.sample, rel.q.mean = statistics.results()$rel.q.mean, noref.warn = "A valid name of a sample to be used as baseline reference was not provided! Calculated relative quantities are not normalized to a particular sample.", statistics = input$statistics, posthoc = input$posthoc, nostatref.warn = "A reference group for the Dunnett post-hoc test has not been chosen. Please check your input.", frw = statistics.results()$frw, few.repl.warn = statistics.results()$few.repl.warn, rel.q.mean.log = rel.q.results.log()$rel.q.mean.log, missingref.warn = "The chosen reference sample had missing data for one or more genes of interest! The respective plots will be empty and the result tables will not contain data for these genes. Choose a different reference sample or none to process and display all data.", nonorm = rel.q.norm.results()$nonorm, nonorm.warn = "The chosen reference sample had missing data for one or more genes of interest! Statistical tests have not been performed! Please choose a different reference sample or none.")
+    rd.warn(ref.sample = statistics.results()$ref.sample, rel.q.mean = statistics.results()$rel.q.mean, noref.warn = "A valid name of a sample to be used as baseline reference was not provided! Calculated relative quantities are not normalized to a particular sample.", statistics = input$statistics, posthoc = input$posthoc, nostatref.warn = "A reference group for the Dunnett post-hoc test has not been chosen. Please check your input.", frw = statistics.results()$frw, few.repl.warn = statistics.results()$few.repl.warn, rel.q.mean.log = rel.q.results.log()$rel.q.mean.log, missingref.warn = "The chosen reference sample had missing data for one or more genes of interest! The respective plots will be empty and the result tables will not contain data for these genes. Choose a different reference sample or none to process and display all data.", nonorm = rel.q.norm.results()$nonorm, nonorm.warn = "The chosen reference sample had missing data for one or more genes of interest! Statistical tests have not been performed! Please choose a different reference sample or none.", sel.pairs = statistics.results()$sel.pairs, sel.pairs.warn = statistics.results()$sel.pairs.warn)
   })
 
   observeEvent(warnings()$noref.warn, {
@@ -1283,6 +1283,11 @@ server <- function(input, output, session) {
   observeEvent(warnings()$few.repl.warn, {
     shinyalert("Warning!", warnings()$few.repl.warn, type = "warning")
   })
+  
+  observeEvent(warnings()$sel.pairs.warn, {
+    shinyalert("Warning!", warnings()$sel.pairs.warn, type = "warning")
+  })
+  
 
   ## Remove temporary files if any
   session$onSessionEnded(function() {
