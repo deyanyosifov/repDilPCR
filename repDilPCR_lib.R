@@ -1,7 +1,7 @@
 ## Title: A Library of Functions Used by both the repDilPCR R Script and the repDilPCR Shiny App
 ## File name: repDilPCR_lib.R
-## Version: 1.0.8
-## Date: 2023-04-04
+## Version: 1.0.9
+## Date: 2023-04-06
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
@@ -751,11 +751,11 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
           res.posthoc[which(res.posthoc$Genes == i), "y1.lin"] <- seq(min(res.posthoc[which(res.posthoc$Genes == i), "y.lin"], na.rm = TRUE), ceiling(mx.lin[i] + 0.1*span.lin[i]), length.out = nrow(res.posthoc[which(res.posthoc$Genes == i),]))
           un.diff[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y1"][2] - res.posthoc[which(res.posthoc$Genes == i), "y1"][1])
           un.diff.lin[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y1.lin"][2] - res.posthoc[which(res.posthoc$Genes == i), "y1.lin"][1])
-          if (un.diff[i]/span < 0.02) {
-            un.diff[i] <- un.diff[i]*span
+          if (un.diff[i]/span[i] < 0.02) {
+            un.diff[i] <- un.diff[i]*span[i]
           }
-          if (un.diff.lin[i]/span.lin < 0.02) {
-            un.diff.lin[i] <- un.diff.lin[i]*span.lin
+          if (un.diff.lin[i]/span.lin[i] < 0.02) {
+            un.diff.lin[i] <- un.diff.lin[i]*span.lin[i]
           }
           res.posthoc[which(res.posthoc$Genes == i), "y2"] <- res.posthoc[which(res.posthoc$Genes == i), "y"]
           res.posthoc[which(res.posthoc$Genes == i), "y2.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y.lin"]
@@ -772,11 +772,11 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
           res.posthoc[which(res.posthoc$Genes == i), "y3.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y3.lin"][order(res.posthoc[which(res.posthoc$Genes == i), "y3.lin"], decreasing = FALSE)]
           un.diff.b[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y3"][2] - res.posthoc[which(res.posthoc$Genes == i), "y3"][1])
           un.diff.b.lin[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y3.lin"][2] - res.posthoc[which(res.posthoc$Genes == i), "y3.lin"][1])
-          if (un.diff.b[i]/span < 0.02) {
-            un.diff.b[i] <- un.diff.b[i]*span
+          if (un.diff.b[i]/span[i] < 0.02) {
+            un.diff.b[i] <- un.diff.b[i]*span[i]
           }
-          if (un.diff.b.lin[i]/span.lin < 0.02) {
-            un.diff.b.lin[i] <- un.diff.b.lin[i]*span.lin
+          if (un.diff.b.lin[i]/span.lin[i] < 0.02) {
+            un.diff.b.lin[i] <- un.diff.b.lin[i]*span.lin[i]
           }
           res.posthoc[which(res.posthoc$Genes == i), "y4"] <- res.posthoc[which(res.posthoc$Genes == i), "y.s"]
           res.posthoc[which(res.posthoc$Genes == i), "y4.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y.s.lin"]
@@ -789,11 +789,11 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
           res.posthoc[which(res.posthoc$Genes == i), "y5.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y5.lin"][order(res.posthoc[which(res.posthoc$Genes == i), "y5.lin"], decreasing = FALSE)]
           un.diff.c[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y5"][2] - res.posthoc[which(res.posthoc$Genes == i), "y5"][1])
           un.diff.c.lin[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y5.lin"][2] - res.posthoc[which(res.posthoc$Genes == i), "y5.lin"][1])
-          if (un.diff.c[i]/span < 0.02) {
-            un.diff.c[i] <- un.diff.c[i]*span
+          if (un.diff.c[i]/span[i] < 0.02) {
+            un.diff.c[i] <- un.diff.c[i]*span[i]
           }
-          if (un.diff.c.lin[i]/span.lin < 0.02) {
-            un.diff.c.lin[i] <- un.diff.c.lin[i]*span.lin
+          if (un.diff.c.lin[i]/span.lin[i] < 0.02) {
+            un.diff.c.lin[i] <- un.diff.c.lin[i]*span.lin[i]
           }
           res.posthoc[which(res.posthoc$Genes == i), "y6"] <- res.posthoc[which(res.posthoc$Genes == i), "y.s"]
           res.posthoc[which(res.posthoc$Genes == i), "y6.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y.s.lin"]
