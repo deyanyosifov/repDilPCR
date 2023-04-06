@@ -612,7 +612,7 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
         if (length(which(res.posthoc$GeneSampleCombo == k)) > 0) {
           a <- which(rel.q.log$GeneSampleCombo == k)
           b <- rel.q.log[a, "Rel.quant"]
-          rel.q.log[a[which(b == max(b))], "p.value"] <- res.posthoc[which(res.posthoc$GeneSampleCombo == k),as.character(ref.sample)]
+          rel.q.log[a[which(b == max(b, na.rm = TRUE))], "p.value"] <- res.posthoc[which(res.posthoc$GeneSampleCombo == k),as.character(ref.sample)]
         }
       }
       for (l in 1:nrow(rel.q.mean.log)) {
@@ -1170,7 +1170,7 @@ rd.plot.p4 <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
     for (i in GOIs) {
       p4[[i]] <-ggplot2::ggplot(subset(rel.q.log, Genes == i), ggplot2::aes(x=Samples, y=Rel.quant, colour=Samples, fill=Samples)) +
         ggbeeswarm::geom_beeswarm(cex = 2, size = 2, groupOnX = TRUE) +
-        ggplot2::ylim(floor(min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), ceiling(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) + 0.025*(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)))) +
+        ggplot2::ylim(floor(min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), ceiling(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) + 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)))) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab(expression("log"[2]~"(relative expression)")) +
@@ -1242,7 +1242,7 @@ rd.plot.p5 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics
       p5[[i]] <- ggplot2::ggplot(subset(rel.q.mean.log, Genes == i), ggplot2::aes(x=Samples, y=Expression, colour=Samples, fill=Samples)) +
         ggplot2::geom_point(size=2) +
         ggplot2::geom_errorbar(aes(ymin=Expression-SD, ymax=Expression+SD), width=.2) +
-        ggplot2::ylim(floor(min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD)), ceiling(max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD)) + 0.025*(max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD) - min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD))) +
+        ggplot2::ylim(floor(min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD)), ceiling(max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD)) + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD) - min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD))) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab(expression("log"[2]~"(relative expression)")) +
@@ -1387,7 +1387,7 @@ if (statistics == FALSE | posthoc == "all to one") {
   for (i in GOIs) {
     p5n[[i]] <- ggplot2::ggplot(subset(rel.q.log, Genes == i), ggplot2::aes(x=Samples, y=Rel.quant, colour=Samples)) +
       ggplot2::geom_boxplot() +
-      ggplot2::ylim(floor(min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), ceiling(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) + 0.025*(max(subset(rel.q.log, Genes == i)$Rel.quant) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)))) +
+      ggplot2::ylim(floor(min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), ceiling(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) + 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)))) +
       ggplot2::theme_bw() +
       ggplot2::ggtitle(i) +
       ggplot2::ylab(expression("log"[2]~"(relative expression)")) +
