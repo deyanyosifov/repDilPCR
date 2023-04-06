@@ -1,6 +1,6 @@
 ## Title: A Library of Functions Used by both the repDilPCR R Script and the repDilPCR Shiny App
 ## File name: repDilPCR_lib.R
-## Version: 1.0.9
+## Version: 1.1.0
 ## Date: 2023-04-06
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>

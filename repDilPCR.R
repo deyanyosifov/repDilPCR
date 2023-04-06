@@ -1,6 +1,6 @@
 ## Title: repDilPCR - an R Script to Analyze qPCR Data by the Dilution-replicate Method
 ## File name: repDilPCR_CLI.R
-## Version: 1.0.9
+## Version: 1.1.0
 ## Date: 2023-04-06
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
@@ -36,7 +36,11 @@ library(tidyverse)
 
 
 ## Prepare data
-qPCR <- read.csv(input.table, sep = ",", dec = ".", stringsAsFactors = TRUE) ## input data file name (insert it between the quotation marks)
+if (length(str_extract_all(read_delim(input.table, ","), "\\d;\\d")[[1]]) > 5) {
+  qPCR <- read.csv(input.table, sep = ";", dec = ",", stringsAsFactors = TRUE)
+} else {  
+  qPCR <- read.csv(input.table, sep = ",", dec = ".", stringsAsFactors = TRUE)
+}
 if (colnames(qPCR)[3] == "Dilution") {
   inp.data <- rd.preprocess(qPCR, RG)
   qPCR <- inp.data$qPCR
