@@ -749,6 +749,7 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
         if (length(which(res.posthoc$Genes == i)) > 1 && posthoc != "selected pairs") {
           res.posthoc[which(res.posthoc$Genes == i), "y1"] <- seq(min(res.posthoc[which(res.posthoc$Genes == i), "y"], na.rm = TRUE), ceiling(mx[i] + 0.1*span[i]), length.out = nrow(res.posthoc[which(res.posthoc$Genes == i),]))
           res.posthoc[which(res.posthoc$Genes == i), "y1.lin"] <- seq(min(res.posthoc[which(res.posthoc$Genes == i), "y.lin"], na.rm = TRUE), ceiling(mx.lin[i] + 0.1*span.lin[i]), length.out = nrow(res.posthoc[which(res.posthoc$Genes == i),]))
+          res.posthoc[which(res.posthoc$Genes == i), "y1.lin"] <- res.posthoc[which(res.posthoc$Genes == i), "y1.lin"][order(res.posthoc[which(res.posthoc$Genes == i), "y1.lin"], decreasing = FALSE)]
           un.diff[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y1"][2] - res.posthoc[which(res.posthoc$Genes == i), "y1"][1])
           un.diff.lin[i] <- sp.f*(res.posthoc[which(res.posthoc$Genes == i), "y1.lin"][2] - res.posthoc[which(res.posthoc$Genes == i), "y1.lin"][1])
           if (un.diff[i]/span[i] < 0.02) {
