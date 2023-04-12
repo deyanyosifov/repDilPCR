@@ -33,6 +33,8 @@ library(mice)
 library(PMCMRplus)
 library(ggbeeswarm)
 library(ggsignif)
+library(RColorBrewer)
+library(scales)
 
 ## Convenience functions for formatting numbers and plotting to PNG files
 get.rid.zeros <- function (x) ifelse(x > .Machine$double.eps,identity(x),x <- .Machine$double.eps)
@@ -160,10 +162,46 @@ rd.eff <- function (model.list, all.genes) {
 }
 # write.csv(eff.df, file=paste0(gsub(".csv", "", input.table), "_efficiency_table.csv"))
 
+## Prepare colour scales
+rd.col.scale.regr <- function(qPCR, colour.scheme, posthoc) {
+  nb.cols <- length(levels(qPCR$Replicates))
+  colour_scale_regr <- hue_pal()(nb.cols)
+  if (posthoc == "selected pairs" && colour.scheme == "default") {colour.scheme <- "Paired"}
+  if (colour.scheme %in% rownames(brewer.pal.info)) {
+    nb.col.pal <- brewer.pal.info$maxcolors[which(rownames(brewer.pal.info) == colour.scheme)]
+    if (nb.cols > nb.col.pal) {
+      colour_scale_regr <- colorRampPalette(brewer.pal(nb.col.pal, colour.scheme))(nb.cols)
+    } else {
+      colour_scale_regr <- brewer.pal(nb.col.pal, colour.scheme)
+    }
+  }
+  if (colour.scheme == "Grayscale") {
+    colour_scale_regr <- gray.colors(nb.cols, start = 0.9, end = 0, gamma = 2.2)
+  }
+  return(colour_scale_regr)
+}
+
+rd.col.scale <- function(qPCR, colour.scheme, posthoc) {
+  nb.cols <- length(levels(qPCR$Samples))
+  colour_scale <- hue_pal()(nb.cols)
+  if (posthoc == "selected pairs" && colour.scheme == "default") {colour.scheme <- "Paired"}
+  if (colour.scheme %in% rownames(brewer.pal.info)) {
+    nb.col.pal <- brewer.pal.info$maxcolors[which(rownames(brewer.pal.info) == colour.scheme)]
+    if (nb.cols > nb.col.pal) {
+      colour_scale <- colorRampPalette(brewer.pal(nb.col.pal, colour.scheme))(nb.cols)
+    } else {
+      colour_scale <- brewer.pal(nb.col.pal, colour.scheme)
+    }
+  }
+  if (colour.scheme == "Grayscale") {
+    colour_scale <- gray.colors(nb.cols, start = 0.9, end = 0, gamma = 2.2)
+  }
+  return(colour_scale)
+}
 
 ## Plot multiple regressions with separate regression curves but common slope
 # Variant for plotting from a script
-rd.plot.mlr <- function(qPCR, model.list, eff.df, all.genes, font.size) {
+rd.plot.mlr <- function(qPCR, model.list, eff.df, all.genes, font.size, colour_scale_regr) {
   pred.data <- list()
   for (i in 1:length(all.genes)) {
     pred.data[[i]] <- predict(model.list[[i]])
@@ -182,12 +220,14 @@ rd.plot.mlr <- function(qPCR, model.list, eff.df, all.genes, font.size) {
   pred.df <- data.frame(pred.data, stringsAsFactors = FALSE)
   pred.names <- paste0(all.genes,"_pred")
   colnames(pred.df) <- pred.names
-
+  
   stand.curves <- list()
 
   legend <- ggplot2::ggplot(data=cbind(qPCR, pred.df), ggplot2::aes_string(x = "log(1/Dilution)", y = "NF", colour="Replicates", fill="Replicates")) +
     ggplot2::geom_point(size=2) +
     ggplot2::geom_line(ggplot2::aes_(y = as.name("NF_pred"))) +
+    scale_colour_manual(values = colour_scale_regr) +
+    scale_fill_manual(values = colour_scale_regr) +
     ggplot2::theme_bw() +
     ggplot2::guides(colour=ggplot2::guide_legend(ncol=4), fill=ggplot2::guide_legend(ncol=4)) +
     ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
@@ -206,6 +246,8 @@ rd.plot.mlr <- function(qPCR, model.list, eff.df, all.genes, font.size) {
       ggplot2::ylim(floor(min(pred.df[,i], na.rm = TRUE)), ceiling(max(pred.df[,i], na.rm = TRUE))) +
       ggplot2::xlab("ln(1/dilution)") +
       ggplot2::ylab("Cq") +
+      scale_colour_manual(values = colour_scale_regr) +
+      scale_fill_manual(values = colour_scale_regr) +
       ggplot2::theme_bw() +
       ggplot2::theme(legend.position = "none") +
       ggplot2::ggtitle(all.genes[i]) +
@@ -222,7 +264,7 @@ rd.plot.mlr <- function(qPCR, model.list, eff.df, all.genes, font.size) {
 }
 
 # Variant for plotting from a Shiny app
-rd.plot.mlr.s <- function(qPCR, model.list, eff.df, all.genes, font.size) {
+rd.plot.mlr.s <- function(qPCR, model.list, eff.df, all.genes, font.size, colour_scale_regr) {
   pred.data <- list()
   for (i in 1:length(all.genes)) {
     pred.data[[i]] <- predict(model.list[[i]])
@@ -252,6 +294,8 @@ rd.plot.mlr.s <- function(qPCR, model.list, eff.df, all.genes, font.size) {
       ggplot2::ylim(floor(min(pred.df[,i], na.rm = TRUE)), ceiling(max(pred.df[,i], na.rm = TRUE))) +
       ggplot2::xlab("ln(1/dilution)") +
       ggplot2::ylab("Cq") +
+      scale_colour_manual(values = colour_scale_regr) +
+      scale_fill_manual(values = colour_scale_regr) +
       ggplot2::ggtitle(all.genes[i]) +
       ggplot2::geom_text(x=-0.75, y=floor(max(pred.df[,i]-1, na.rm = TRUE)), label = paste0("Eff = ", round(eff.df[i,1], 2), " (", round(eff.df[i,2], 2), "-", round(eff.df[i,3], 2), ")"), color="gray20", size=5) +
       ggplot2::labs(caption = gsub("^.*(Residual standard.*$)", "\\1", paste(capture.output(summary(model.list[[i]])), collapse = "\n"))) +
@@ -283,7 +327,7 @@ rd.Cq.Cq <- function(qPCR, GOIs) {
 
 ## Plot Cq-Cq plots
 # Variant for plotting from a script
-rd.plot.Cq.Cq <- function(qPCR, Cq.list, GOIs, font.size) {
+rd.plot.Cq.Cq <- function(qPCR, Cq.list, GOIs, font.size, colour_scale_regr) {
   pred.Cq <- list()
   for (i in 1:length(Cq.list)) {
     pred.Cq[[i]] <- predict(Cq.list[[i]])
@@ -308,6 +352,8 @@ rd.plot.Cq.Cq <- function(qPCR, Cq.list, GOIs, font.size) {
   legend <- ggplot2::ggplot(data=cbind(qPCR, pred.Cq.df), ggplot2::aes_string(x = "NF", y = GOIs[1], colour="Replicates", fill="Replicates")) +
     ggplot2::geom_point(size=2) +
     ggplot2::geom_line(ggplot2::aes_(y = as.name(pred.Cq.names[1]))) +
+    scale_colour_manual(values = colour_scale_regr) +
+    scale_fill_manual(values = colour_scale_regr) +
     ggplot2::theme_bw() +
     ggplot2::guides(colour=ggplot2::guide_legend(ncol=4), fill=ggplot2::guide_legend(ncol=4)) +
     ggplot2::theme(legend.title=ggplot2::element_text(size = font.size + 2)) +
@@ -326,6 +372,8 @@ rd.plot.Cq.Cq <- function(qPCR, Cq.list, GOIs, font.size) {
       # ggplot2::coord_fixed(ratio=1) +
       ggplot2::xlab(c("NF (Cq)")) +
       ggplot2::ylab(paste(GOIs[i],"(Cq)")) +
+      scale_colour_manual(values = colour_scale_regr) +
+      scale_fill_manual(values = colour_scale_regr) +
       ggplot2::theme_bw() +
       ggplot2::theme(legend.position="none") +
       ggplot2::ggtitle(GOIs[i]) +
@@ -341,7 +389,7 @@ rd.plot.Cq.Cq <- function(qPCR, Cq.list, GOIs, font.size) {
 }
 
 # Variant for plotting from a Shiny app
-rd.plot.Cq.Cq.s <- function(qPCR, Cq.list, GOIs, font.size) {
+rd.plot.Cq.Cq.s <- function(qPCR, Cq.list, GOIs, font.size, colour_scale_regr) {
   pred.Cq <- list()
   for (i in 1:length(Cq.list)) {
     pred.Cq[[i]] <- predict(Cq.list[[i]])
@@ -372,6 +420,8 @@ rd.plot.Cq.Cq.s <- function(qPCR, Cq.list, GOIs, font.size) {
       ggplot2::coord_fixed(ratio=1) +
       ggplot2::xlab(c("NF (Cq)")) +
       ggplot2::ylab(paste(GOIs[i],"(Cq)")) +
+      scale_colour_manual(values = colour_scale_regr) +
+      scale_fill_manual(values = colour_scale_regr) +
       ggplot2::ggtitle(GOIs[i]) +
       ggplot2::labs(caption = gsub("^.*(Residual standard.*$)", "\\1", paste(capture.output(summary(Cq.list[[i]])), collapse = "\n"))) +
       ggplot2::guides(colour=ggplot2::guide_legend(ncol=4), fill=ggplot2::guide_legend(ncol=4)) +
@@ -877,7 +927,7 @@ rd.statistics <- function(rel.q.df, rel.q.log, rel.q.mean, rel.q.mean.log, stati
 
 
 ## Plot relative expression
-rd.plot.p1 <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
+rd.plot.p1 <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm, colour_scale) {
   p1 <- list()
   if (statistics == FALSE | posthoc == "all to one") {
     for (i in GOIs) {
@@ -887,6 +937,8 @@ rd.plot.p1 <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, stat
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab("Relative expression") +
+        scale_colour_manual(values = colour_scale) +
+        scale_fill_manual(values = colour_scale) +
         ggplot2::theme(axis.text=ggplot2::element_text(size = font.size)) +
         ggplot2::theme(axis.title=ggplot2::element_text(size = font.size + 2)) +
         ggplot2::theme(plot.title=ggplot2::element_text(size = font.size + 4, face = "bold")) +
@@ -922,6 +974,8 @@ rd.plot.p1 <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, stat
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab("Relative expression") +
+        scale_colour_manual(values = colour_scale) +
+        scale_fill_manual(values = colour_scale) +
         ggplot2::theme(axis.text=ggplot2::element_text(size = font.size)) +
         ggplot2::theme(axis.title=ggplot2::element_text(size = font.size + 2)) +
         ggplot2::theme(plot.title=ggplot2::element_text(size = font.size + 4, face = "bold")) +
@@ -948,7 +1002,7 @@ rd.plot.p1 <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, stat
   return(p1.results)
 }
 
-rd.plot.p2 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
+rd.plot.p2 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm, colour_scale) {
   p2 <- list()
   if (statistics == FALSE | posthoc == "all to one") {
     for (i in GOIs) {
@@ -956,6 +1010,8 @@ rd.plot.p2 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
         ggplot2::geom_point(size=2) +
         ggplot2::geom_errorbar(ggplot2::aes(ymin=left.CI, ymax=right.CI), width=.2) +
         ggplot2::ylim(0, 1.2*max(subset(rel.q.mean, Genes == i)$right.CI)) +
+        scale_colour_manual(values = colour_scale) +
+        scale_fill_manual(values = colour_scale) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab("Relative expression") +
@@ -992,6 +1048,8 @@ rd.plot.p2 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
         ggplot2::geom_point(size=2) +
         ggplot2::geom_errorbar(aes(ymin=left.CI, ymax=right.CI), width=.2) +
         ggplot2::ylim(0, max(ceiling(max(subset(rel.q.mean, Genes == i)$right.CI)*1.025), cc)) +
+        scale_colour_manual(values = colour_scale) +
+        scale_fill_manual(values = colour_scale) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab("Relative expression") +
@@ -1021,13 +1079,15 @@ rd.plot.p2 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
   return(p2.results)
 }
 
-rd.plot.p3 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
+rd.plot.p3 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm, colour_scale) {
   p3 <- list()
   if (statistics == FALSE | posthoc == "all to one") {
     for (i in GOIs) {
       p3[[i]] <-ggplot2::ggplot(subset(rel.q.mean, Genes == i), ggplot2::aes(x=Samples, y=Expression, colour=Samples, fill=Samples)) +
         ggplot2::geom_col(position = "dodge") +
         ggplot2::geom_errorbar(aes(ymin=left.CI, ymax=right.CI), width=.2, position=position_dodge(.9), color="gray20") +
+        scale_colour_manual(values = colour_scale) +
+        scale_fill_manual(values = colour_scale) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab("Relative expression") +
@@ -1064,6 +1124,8 @@ rd.plot.p3 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
         ggplot2::geom_col(position = "dodge") +
         ggplot2::geom_errorbar(aes(ymin=left.CI, ymax=right.CI), width=.2, position=position_dodge(.9), color="gray20") +
         ggplot2::ylim(0, max(ceiling(max(subset(rel.q.mean, Genes == i)$right.CI)*1.025), cc)) +
+        scale_colour_manual(values = colour_scale) +
+        scale_fill_manual(values = colour_scale) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab("Relative expression") +
@@ -1093,13 +1155,14 @@ rd.plot.p3 <- function(rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, po
   return(p3.results)
 }
 
-rd.plot.p2n <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
+rd.plot.p2n <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm, colour_scale) {
   p2n <- list()
   if (statistics == FALSE | posthoc == "all to one") {
     for (i in GOIs) {
       p2n[[i]] <- ggplot2::ggplot(subset(rel.q.df, Genes == i), ggplot2::aes(x=Samples, y=Rel.quant, colour=Samples)) +
         ggplot2::geom_boxplot() +
         ggplot2::ylim(0, 1.2*max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)) +
+        scale_colour_manual(values = colour_scale) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab("Relative expression") +
@@ -1135,6 +1198,7 @@ rd.plot.p2n <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
       p2n[[i]] <- ggplot2::ggplot(subset(rel.q.df, Genes == i), ggplot2::aes(x=Samples, y=Rel.quant, colour=Samples)) +
         ggplot2::geom_boxplot() +
         ggplot2::ylim(0, max(ceiling(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)*1.025), cc)) +
+        scale_colour_manual(values = colour_scale) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab("Relative expression") +
@@ -1165,13 +1229,15 @@ rd.plot.p2n <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
 }
 
 
-rd.plot.p4 <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
+rd.plot.p4 <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm, colour_scale) {
   p4 <- list()
   if (statistics == FALSE | posthoc == "all to one") {
     for (i in GOIs) {
       p4[[i]] <-ggplot2::ggplot(subset(rel.q.log, Genes == i), ggplot2::aes(x=Samples, y=Rel.quant, colour=Samples, fill=Samples)) +
         ggbeeswarm::geom_beeswarm(cex = 2, size = 2, groupOnX = TRUE) +
         ggplot2::ylim(floor(min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), ceiling(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) + 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)))) +
+        scale_colour_manual(values = colour_scale) +
+        scale_fill_manual(values = colour_scale) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab(expression("log"[2]~"(relative expression)")) +
@@ -1207,6 +1273,8 @@ rd.plot.p4 <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
       p4[[i]] <-ggplot2::ggplot(subset(rel.q.log, Genes == i), ggplot2::aes(x=Samples, y=Rel.quant, colour=Samples, fill=Samples)) +
         ggbeeswarm::geom_beeswarm(cex = 2, size = 2, groupOnX = TRUE) +
         ggplot2::ylim(floor(min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), max(ceiling(1.025*max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), cc)) +
+        scale_colour_manual(values = colour_scale) +
+        scale_fill_manual(values = colour_scale) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab(expression("log"[2]~"(relative expression)")) +
@@ -1236,7 +1304,7 @@ rd.plot.p4 <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, sta
   return(p4.results)
 }
 
-rd.plot.p5 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
+rd.plot.p5 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm, colour_scale) {
   p5 <- list()
   if (statistics == FALSE | posthoc == "all to one") {
     for (i in GOIs) {
@@ -1244,6 +1312,8 @@ rd.plot.p5 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics
         ggplot2::geom_point(size=2) +
         ggplot2::geom_errorbar(aes(ymin=Expression-SD, ymax=Expression+SD), width=.2) +
         ggplot2::ylim(floor(min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD)), ceiling(max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD)) + 0.1*(max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD) - min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD))) +
+        scale_colour_manual(values = colour_scale) +
+        scale_fill_manual(values = colour_scale) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab(expression("log"[2]~"(relative expression)")) +
@@ -1280,6 +1350,8 @@ rd.plot.p5 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics
         ggplot2::geom_point(size=2) +
         ggplot2::geom_errorbar(aes(ymin=Expression-SD, ymax=Expression+SD), width=.2) +
         ggplot2::ylim(floor(min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD)), max(ceiling(1.025*max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD)), cc)) +
+        scale_colour_manual(values = colour_scale) +
+        scale_fill_manual(values = colour_scale) +
         ggplot2::theme_bw() +
         ggplot2::ggtitle(i) +
         ggplot2::ylab(expression("log"[2]~"(relative expression)")) +
@@ -1309,13 +1381,15 @@ rd.plot.p5 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics
   return(p5.results)
 }
 
-rd.plot.p6 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
+rd.plot.p6 <- function(rel.q.mean.log, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm, colour_scale) {
 p6 <- list()
 if (statistics == FALSE | posthoc == "all to one") {
   for (i in GOIs) {
   p6[[i]] <- ggplot2::ggplot(subset(rel.q.mean.log, Genes == i), ggplot2::aes(x=Samples, y=Expression, colour=Samples, fill=Samples)) +
     ggplot2::geom_col(position = "dodge") +
     ggplot2::geom_errorbar(aes(ymin=Expression-SD, ymax=Expression+SD), width=.2, position=position_dodge(.9), color="gray20") +
+    scale_colour_manual(values = colour_scale) +
+    scale_fill_manual(values = colour_scale) +
     ggplot2::theme_bw() +
     ggplot2::ggtitle(i) +
     ggplot2::ylab(expression("log"[2]~"(relative expression)")) +
@@ -1353,6 +1427,8 @@ if (statistics == FALSE | posthoc == "all to one") {
       ggplot2::geom_errorbar(aes(ymin=Expression-SD, ymax=Expression+SD), width=.2, position=position_dodge(.9), color="gray20") +
       # ggplot2::ylim(floor(min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD)), max(ceiling(max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD) + 0.025*(max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD) - min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD))), max(subset(res.posthoc, Genes == i)$y6) + 0.025*(max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD) - min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD)))) +
       ggplot2::ylim(floor(min(subset(rel.q.mean.log, Genes == i)$Expression - subset(rel.q.mean.log, Genes == i)$SD)), max(ceiling(1.025*max(subset(rel.q.mean.log, Genes == i)$Expression + subset(rel.q.mean.log, Genes == i)$SD)), cc)) +
+      scale_colour_manual(values = colour_scale) +
+      scale_fill_manual(values = colour_scale) +
       ggplot2::theme_bw() +
       ggplot2::ggtitle(i) +
       ggplot2::ylab(expression("log"[2]~"(relative expression)")) +
@@ -1382,13 +1458,14 @@ p6.results <- list("p6" = p6, "ml" = ml)
 return(p6.results)
 }
 
-rd.plot.p5n <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm) {
+rd.plot.p5n <- function(rel.q.log, rel.q.mean, res.posthoc, ref.sample, GOIs, statistics, posthoc, sign.repr, p, stat.test, font.size, nonorm, colour_scale) {
 p5n <- list()
 if (statistics == FALSE | posthoc == "all to one") {
   for (i in GOIs) {
     p5n[[i]] <- ggplot2::ggplot(subset(rel.q.log, Genes == i), ggplot2::aes(x=Samples, y=Rel.quant, colour=Samples)) +
       ggplot2::geom_boxplot() +
       ggplot2::ylim(floor(min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), ceiling(max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE) + 0.1*(max(subset(rel.q.log, Genes == i)$Rel.quant) - min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)))) +
+      scale_colour_manual(values = colour_scale) +
       ggplot2::theme_bw() +
       ggplot2::ggtitle(i) +
       ggplot2::ylab(expression("log"[2]~"(relative expression)")) +
@@ -1424,6 +1501,7 @@ if (statistics == FALSE | posthoc == "all to one") {
     p5n[[i]] <- ggplot2::ggplot(subset(rel.q.log, Genes == i), ggplot2::aes(x=Samples, y=Rel.quant, colour=Samples)) +
       ggplot2::geom_boxplot() +
       ggplot2::ylim(floor(min(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), max(ceiling(1.025*max(subset(rel.q.log, Genes == i)$Rel.quant, na.rm = TRUE)), cc)) +
+      scale_colour_manual(values = colour_scale) +
       ggplot2::theme_bw() +
       ggplot2::ggtitle(i) +
       ggplot2::ylab(expression("log"[2]~"(relative expression)")) +

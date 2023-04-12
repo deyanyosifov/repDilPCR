@@ -62,7 +62,9 @@ ui <- fluidPage(
 
       numericInput("sp.f", h5("Distance between significance bars on plots"), value = 1.5, min = 0, step = 0.5),
       h6(""), helpText("Spacing factor influencing the distance between significance bars on plots. In most cases, repDilPCR will succeed to distribute significance bars so that they will not overlap. If your significance bars overlap (which can be the case if you compare a lot of experimental groups), you can try increasing this heuristic parameter. Conversely, if the distances between significance bars are too big and they are wasting space on plots, you can try decreasing the factor. The default value is 1.5.", style = 'text-align:justify;'),
-
+      
+      selectInput("colour.scheme", h4("Colour scheme"),
+                  choices = list("Default" = "default", "Dark 1" = "Set1", "Dark 2" = "Dark2", "Light 1" = "Set2", "Light 2" = "Set3", "Paired" = "Paired", "Grayscale" = "Grayscale"), selected = "default"),
 
       radioButtons("plot.format", h4("Format of graphical output (only for downloadable files)"),
                    choices = list("PDF", "PNG", "both", "no graphics" = "none"), selected = "PDF"),
@@ -309,9 +311,20 @@ server <- function(input, output, session) {
       rd.eff(model.list(), inp.data()$all.genes)
     }
   })
+  
+  ## Prepare colour scales
+  colour_scale_regr <- reactive({
+    req(qPCR.NF())
+    rd.col.scale.regr(qPCR = qPCR.NF(), colour.scheme = input$colour.scheme, posthoc = input$posthoc)
+  })
+  
+  colour_scale <- reactive({
+    req(qPCR.NF())
+    rd.col.scale(qPCR = qPCR.NF(), colour.scheme = input$colour.scheme, posthoc = input$posthoc)
+  })
 
   # Plot multiple regressions with separate regression curves but common slope (for display in a web browser) ----
-  observeEvent({c(qPCR.NF(), model.list(), eff.df())},{
+  observeEvent({c(qPCR.NF(), model.list(), eff.df(), colour_scale_regr())},{
     if (colnames(inp.data()$qPCR)[3] == "Dilution") {
       output$stand.curves <- renderUI({
         stand_curves_list <- lapply(1:length(inp.data()$all.genes), function(i) {
@@ -326,7 +339,7 @@ server <- function(input, output, session) {
           stand_i <- i
           plotname <- paste("plot", stand_i, sep="")
           output[[plotname]] <- renderPlot({
-            rd.plot.mlr.s(qPCR = qPCR.NF(), model.list = model.list(), eff.df = eff.df(), all.genes = inp.data()$all.genes, font.size = input$font.size + 4)[[stand_i]]
+            rd.plot.mlr.s(qPCR = qPCR.NF(), model.list = model.list(), eff.df = eff.df(), all.genes = inp.data()$all.genes, font.size = input$font.size + 4, colour_scale_regr = colour_scale_regr())[[stand_i]]
           })
         })
       }}
@@ -336,7 +349,7 @@ server <- function(input, output, session) {
   stand.curves.output <- reactive({
     req(qPCR.NF())
     if (colnames(inp.data()$qPCR)[3] == "Dilution") {
-      rd.plot.mlr(qPCR = qPCR.NF(), model.list = model.list(), eff.df = eff.df(), all.genes = inp.data()$all.genes, font.size = input$font.size)
+      rd.plot.mlr(qPCR = qPCR.NF(), model.list = model.list(), eff.df = eff.df(), all.genes = inp.data()$all.genes, font.size = input$font.size, colour_scale_regr = colour_scale_regr())
     }
   })
 
@@ -349,7 +362,7 @@ server <- function(input, output, session) {
   })
 
   ## Plot Cq-Cq plots for display in a web browser ----
-  observeEvent({c(qPCR.NF(), Cq.list())},{
+  observeEvent({c(qPCR.NF(), Cq.list(), colour_scale_regr())},{
     if (colnames(inp.data()$qPCR)[3] == "Dilution") {
       output$Cq.plots <- renderUI({
         Cq.plots.list <- lapply(1:length(inp.data()$GOIs), function(i) {
@@ -364,7 +377,7 @@ server <- function(input, output, session) {
           Cq_i <- i
           Cq.plotname <- paste("Cq.plot", Cq_i, sep="")
           output[[Cq.plotname]] <- renderPlot({
-            rd.plot.Cq.Cq.s(qPCR = qPCR.NF(), Cq.list = Cq.list(), GOIs = inp.data()$GOIs, font.size = input$font.size + 4)[[Cq_i]]
+            rd.plot.Cq.Cq.s(qPCR = qPCR.NF(), Cq.list = Cq.list(), GOIs = inp.data()$GOIs, font.size = input$font.size + 4, colour_scale_regr = colour_scale_regr())[[Cq_i]]
           })
         })
       }}
@@ -374,7 +387,7 @@ server <- function(input, output, session) {
   Cq.plots.output <- reactive({
     req(qPCR.NF())
     if (colnames(inp.data()$qPCR)[3] == "Dilution") {
-      rd.plot.Cq.Cq(qPCR = qPCR.NF(), Cq.list = Cq.list(), GOIs = inp.data()$GOIs, font.size = input$font.size)
+      rd.plot.Cq.Cq(qPCR = qPCR.NF(), Cq.list = Cq.list(), GOIs = inp.data()$GOIs, font.size = input$font.size, colour_scale_regr = colour_scale_regr())
     }
   })
 
@@ -410,9 +423,9 @@ server <- function(input, output, session) {
     req(statistics.results.c())
     rd.statistics(rel.q.df = statistics.results.c()$rel.q.df, rel.q.log = statistics.results.c()$rel.q.log, rel.q.mean = rel.q.confint()$rel.q.mean, rel.q.mean.log = rel.q.confint()$rel.q.mean.log, statistics = input$statistics, test.type = input$test.type, posthoc = input$posthoc, ref.sample = statistics.results.c()$ref.sample, nonorm = statistics.results.c()$nonorm, p = input$p, sp.f = input$sp.f)
   })
-
+  
   # Plot relative expression dotplots in linear scale (for display in a web browser) ----
-  observeEvent({c(qPCR.NF(), statistics.results())},{
+  observeEvent({c(qPCR.NF(), statistics.results(), colour_scale())},{
     output$p1 <- renderUI({
       p1.results_list <- lapply(inp.data()$GOIs, function(i) {
         plotname <- paste("p1.plot", i, sep="")
@@ -426,14 +439,14 @@ server <- function(input, output, session) {
         p1_i <- i
         plotname <- paste("p1.plot", p1_i, sep="")
         output[[plotname]] <- renderPlot({
-          rd.plot.p1(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p1[[p1_i]]
+          rd.plot.p1(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())$p1[[p1_i]]
         })
       })
     }
   })
 
   # Plot relative expression dotplots (means + CI) in linear scale (for display in a web browser) ----
-  observeEvent({c(qPCR.NF(), statistics.results())},{
+  observeEvent({c(qPCR.NF(), statistics.results(), colour_scale())},{
     output$p2 <- renderUI({
       p2.results_list <- lapply(inp.data()$GOIs, function(i) {
         plotname <- paste("p2.plot", i, sep="")
@@ -448,14 +461,14 @@ server <- function(input, output, session) {
         plotname <- paste("p2.plot", p2_i, sep="")
         output[[plotname]] <- renderPlot({
           req(statistics.results(), input$test.type == "parametric")
-          rd.plot.p2(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p2[[p2_i]]
+          rd.plot.p2(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())$p2[[p2_i]]
         })
       })
     }
   })
 
   # Plot relative expression bar graphs in linear scale (for display in a web browser) ----
-  observeEvent({c(qPCR.NF(), statistics.results())},{
+  observeEvent({c(qPCR.NF(), statistics.results(), colour_scale())},{
     output$p3 <- renderUI({
       p3.results_list <- lapply(inp.data()$GOIs, function(i) {
         plotname <- paste("p3.plot", i, sep="")
@@ -470,14 +483,14 @@ server <- function(input, output, session) {
         plotname <- paste("p3.plot", p3_i, sep="")
         output[[plotname]] <- renderPlot({
           req(statistics.results(), input$test.type == "parametric")
-          rd.plot.p3(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p3[[p3_i]]
+          rd.plot.p3(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())$p3[[p3_i]]
         })
       })
     }
   })
 
   # Plot relative expression box plots in linear scale (for display in a web browser) ----
-  observeEvent({c(qPCR.NF(), statistics.results())},{
+  observeEvent({c(qPCR.NF(), statistics.results(), colour_scale())},{
     output$p2n <- renderUI({
       p2n.results_list <- lapply(inp.data()$GOIs, function(i) {
         plotname <- paste("p2n.plot", i, sep="")
@@ -492,7 +505,7 @@ server <- function(input, output, session) {
         plotname <- paste("p2n.plot", p2n_i, sep="")
         output[[plotname]] <- renderPlot({
           req(statistics.results(), input$test.type == "non-parametric")
-          rd.plot.p2n(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p2n[[p2n_i]]
+          rd.plot.p2n(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())$p2n[[p2n_i]]
         })
       })
     }
@@ -513,7 +526,7 @@ server <- function(input, output, session) {
 
 
   # Plot relative expression dotplots in logarithmic scale (for display in a web browser) ----
-  observeEvent({c(qPCR.NF(), statistics.results())},{
+  observeEvent({c(qPCR.NF(), statistics.results(), colour_scale())},{
     output$p4 <- renderUI({
       p4.results_list <- lapply(inp.data()$GOIs, function(i) {
         plotname <- paste("p4.plot", i, sep="")
@@ -527,14 +540,14 @@ server <- function(input, output, session) {
         p4_i <- i
         plotname <- paste("p4.plot", p4_i, sep="")
         output[[plotname]] <- renderPlot({
-          rd.plot.p4(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p4[[p4_i]]
+          rd.plot.p4(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())$p4[[p4_i]]
         })
       })
     }
   })
 
   # Plot relative expression dotplots (means + SD) in logarithmic scale (for display in a web browser) ----
-  observeEvent({c(qPCR.NF(), statistics.results())},{
+  observeEvent({c(qPCR.NF(), statistics.results(), colour_scale())},{
     output$p5 <- renderUI({
       p5.results_list <- lapply(inp.data()$GOIs, function(i) {
         plotname <- paste("p5.plot", i, sep="")
@@ -549,14 +562,14 @@ server <- function(input, output, session) {
         plotname <- paste("p5.plot", p5_i, sep="")
         output[[plotname]] <- renderPlot({
           req(statistics.results(), input$test.type == "parametric")
-          rd.plot.p5(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p5[[p5_i]]
+          rd.plot.p5(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())$p5[[p5_i]]
         })
       })
     }
   })
 
   # Plot relative expression bar graphs in logarithmic scale (for display in a web browser) ----
-  observeEvent({c(qPCR.NF(), statistics.results())},{
+  observeEvent({c(qPCR.NF(), statistics.results(), colour_scale())},{
     output$p6 <- renderUI({
       p6.results_list <- lapply(inp.data()$GOIs, function(i) {
         plotname <- paste("p6.plot", i, sep="")
@@ -571,14 +584,14 @@ server <- function(input, output, session) {
         plotname <- paste("p6.plot", p6_i, sep="")
         output[[plotname]] <- renderPlot({
           req(statistics.results(), input$test.type == "parametric")
-          rd.plot.p6(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p6[[p6_i]]
+          rd.plot.p6(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())$p6[[p6_i]]
         })
       })
     }
   })
 
   # Plot relative expression box plots in logarithmic scale (for display in a web browser) ----
-  observeEvent({c(qPCR.NF(), statistics.results())},{
+  observeEvent({c(qPCR.NF(), statistics.results(), colour_scale())},{
     output$p5n <- renderUI({
       p5n.results_list <- lapply(inp.data()$GOIs, function(i) {
         plotname <- paste("p5n.plot", i, sep="")
@@ -593,7 +606,7 @@ server <- function(input, output, session) {
         plotname <- paste("p5n.plot", p5n_i, sep="")
         output[[plotname]] <- renderPlot({
           req(statistics.results(), input$test.type == "non-parametric")
-          rd.plot.p5n(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm)$p5n[[p5n_i]]
+          rd.plot.p5n(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size + 4, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())$p5n[[p5n_i]]
         })
       })
     }
@@ -760,24 +773,24 @@ server <- function(input, output, session) {
 
   # Download dotplots  in linear scale ----
   p1.results <- reactive({
-    rd.plot.p1(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
+    rd.plot.p1(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())
   })
 
   p2.results <- reactive({
     if (input$test.type == "parametric") {
-    rd.plot.p2(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
+    rd.plot.p2(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())
     }
   })
 
   p3.results <- reactive({
     if (input$test.type == "parametric") {
-      rd.plot.p3(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
+      rd.plot.p3(rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())
     }
   })
 
   p2n.results <- reactive({
     if (input$test.type == "non-parametric") {
-      rd.plot.p2n(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
+      rd.plot.p2n(rel.q.df = statistics.results()$rel.q.df, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())
     }
   })
 
@@ -961,24 +974,24 @@ server <- function(input, output, session) {
 
   # Download dotplots  in logarithmic scale ----
   p4.results <- reactive({
-    rd.plot.p4(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
+    rd.plot.p4(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())
   })
 
   p5.results <- reactive({
     if (input$test.type == "parametric") {
-      rd.plot.p5(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
+      rd.plot.p5(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())
     }
   })
 
   p6.results <- reactive({
     if (input$test.type == "parametric") {
-      rd.plot.p6(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
+      rd.plot.p6(rel.q.mean.log = statistics.results()$rel.q.mean.log, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())
     }
   })
 
   p5n.results <- reactive({
     if (input$test.type == "non-parametric") {
-      rd.plot.p5n(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm)
+      rd.plot.p5n(rel.q.log = statistics.results()$rel.q.log, rel.q.mean = statistics.results()$rel.q.mean, res.posthoc = statistics.results()$res.posthoc, ref.sample = statistics.results()$ref.sample, GOIs = inp.data()$GOIs, statistics = statistics.results()$statistics, posthoc = input$posthoc, sign.repr = input$sign.repr, p = input$p, stat.test = statistics.results()$stat.test, font.size = input$font.size, nonorm = rel.q.norm.results()$nonorm, colour_scale = colour_scale())
     }
   })
 
