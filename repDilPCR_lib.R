@@ -947,7 +947,7 @@ rd.plot.p1 <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, stat
         ggplot2::theme(legend.text=ggplot2::element_text(size = font.size))
     }
     if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean$Samples && sign.repr == "values") {
-      for (i in unique((rel.q.df %>% filter(p.value <= p))$Genes)) {
+      for (i in unique((rel.q.df %>% filter(p.value <= p & p.value > .Machine$double.eps))$Genes)) {
         p1[[i]] <- p1[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= p & p.value > .Machine$double.eps), ggplot2::aes(label = paste0("p == ", p.val.exp)), parse = TRUE, nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3)
       }
       for (i in unique((rel.q.df %>% filter(p.value <= .Machine$double.eps))$Genes)) {
@@ -955,8 +955,8 @@ rd.plot.p1 <- function(rel.q.df, rel.q.mean, res.posthoc, ref.sample, GOIs, stat
       }
     }
     if (statistics == TRUE && nonorm == 0 && ref.sample %in% rel.q.mean$Samples && sign.repr == "asterisks") {
-      for (i in unique((rel.q.df %>% filter(p.value <= p))$Genes)) {
-        p1[[i]] <- p1[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & p.value <= p), ggplot2::aes(label = asterisks), nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3 + 1)
+      for (i in unique((rel.q.df %>% filter(p.value <= p | p.value <= .Machine$double.eps))$Genes)) {
+        p1[[i]] <- p1[[i]] + ggplot2::geom_text(data = rel.q.df %>% filter(Genes == i & (p.value <= p | p.value <= .Machine$double.eps)), ggplot2::aes(label = asterisks), nudge_y = 0.1*(max(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE) - min(subset(rel.q.df, Genes == i)$Rel.quant, na.rm = TRUE)), colour = "gray20", size = font.size/3 + 1)
       }
     }
     for (i in GOIs) {
