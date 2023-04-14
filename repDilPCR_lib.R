@@ -580,8 +580,8 @@ rd.normalize <- function(rel.q.detailed, rel.q.detailed.log, rel.q.df, rel.q.log
 ## Calculate confidence intervals
 rd.confint <- function(rel.q.mean, rel.q.mean.log, p) {
   for (i in 1:nrow(rel.q.mean)) {
-    rel.q.mean.log$left.CI[i] <- rel.q.mean.log$Expression[i] - qt(1-p/2,rel.q.mean$Replicates[i]-1)*(rel.q.mean.log$SD[i]/rel.q.mean$Replicates[i])
-    rel.q.mean.log$right.CI[i] <- rel.q.mean.log$Expression[i] + qt(1-p/2,rel.q.mean$Replicates[i]-1)*(rel.q.mean.log$SD[i]/rel.q.mean$Replicates[i])
+    rel.q.mean.log$left.CI[i] <- rel.q.mean.log$Expression[i] - qt(1-0.05/2,rel.q.mean$Replicates[i]-1)*(rel.q.mean.log$SD[i]/sqrt(rel.q.mean$Replicates[i]))
+    rel.q.mean.log$right.CI[i] <- rel.q.mean.log$Expression[i] + qt(1-0.05/2,rel.q.mean$Replicates[i]-1)*(rel.q.mean.log$SD[i]/sqrt(rel.q.mean$Replicates[i]))
   }
   rel.q.mean$left.CI <- 2^rel.q.mean.log$left.CI
   rel.q.mean$right.CI <- 2^rel.q.mean.log$right.CI
