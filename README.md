@@ -271,7 +271,7 @@ Technical variance in a qPCR experiment is usually much smaller than variance be
 
 *What do the error bars show? I see they are sometimes not symmetric, is this an error?*
 
-For plots in logarithmic scale, the error bars denote the standard deviations and are symmetric. For plots in linear scale, the error bars show the 1-&alpha; confidence intervals (the default value of &alpha; is 0.05, so by default you will get 95%-confidence intervals). Confidence intervals are calculated from standard deviations in logarithmic scale and then converted to the linear scale. It is perfectly normal if they look asymmetric around the mean value.
+For plots in logarithmic scale, the error bars denote the standard deviations and are symmetric. For plots in linear scale, the error bars show the 95%-confidence intervals. Confidence intervals are calculated from standard deviations in logarithmic scale and then converted to the linear scale. It is perfectly normal if they look asymmetric around the mean value.
 
 *Why so complicated? Can't error bars depict standard deviation also on plots in linear scale?*
 

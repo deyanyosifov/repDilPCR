@@ -1,7 +1,7 @@
 ## Title: repDilPCR - an R Script to Analyze qPCR Data by the Dilution-replicate Method
 ## File name: repDilPCR_CLI.R
-## Version: 1.1.0
-## Date: 2023-04-06
+## Version: 1.1.1
+## Date: 2023-04-17
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
@@ -22,7 +22,7 @@ alpha <- 0.05 # Significance level (alpha). Default value: 0.05
 font.size <- 9 # Size of text on plots. Default value: 9
 sign.repr <- "values" # Choose whether to display statistical significance with numeric p-values or with asterisks (significance levels). Possible values: "values" and "asterisks". Default: "values".
 sp.f <- 1.5 # Spacing factor influencing the distance between significance bars on plots. In most cases, repDilPCR will succeed to distribute significance bars so that they will not overlap. If your significance bars overlap (which can be the case if you compare a lot of experimental groups), you can try increasing this factor. Conversely, if the distances between significance bars are too big and they are wasting space on plots, you can try decreasing the factor. The default value is 1.5.
-colour.scheme <- "default" # Choose colour scheme. Change the default colour scheme (scale_fill_hue()) by replacing the word "default" with the name of a ColorBrewer palette, e.g. Set1, Set2, Set3, Dark2 or Paired, or with the word "Grayscale". Default value: "default".
+colour.scheme <- "default" # Choose a colour scheme. Change the default colour scheme (scale_fill_hue()) by replacing the word "default" with the name of a ColorBrewer palette, e.g. Set1, Set2, Set3, Dark2 or Paired, or with the word "Grayscale". Default value: "default".
 plot.format <- "PDF" # Choose format and adjust settings of graphical output. Possible formats are "PDF" (default), "PNG", "both" or "none".
 png.size <- c(190,134) # Width and height of PNG plots in mm. The default values are 190 and 134 and fit well to the A5 page size format in landscape orientation.
 png.dpi <- 96 # Resolution of PNG plots in dpi (default value: 96).
