@@ -1,7 +1,7 @@
 ## Title: repDilPCR - an R Script to Analyze qPCR Data by the Dilution-replicate Method
 ## File name: repDilPCR_CLI.R
-## Version: 1.1.1
-## Date: 2023-04-17
+## Version: 1.1.2
+## Date: 2023-05-08
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
@@ -48,10 +48,9 @@ if (colnames(qPCR)[3] == "Dilution") {
   all.genes <- inp.data$all.genes
   GOIs <- inp.data$GOIs
 } else {
-  rownames(qPCR) <- qPCR$Replicates
-  # rel.q.results <- list()
-  qPCR <- qPCR[,2:ncol(qPCR)]
-  GOIs <- colnames(qPCR)[2:ncol(qPCR)]
+    inp.data <- rd.preprocess.2(qPCR)
+    qPCR <- inp.data$qPCR
+    GOIs <- inp.data$GOIs
 }
 
 if (colnames(qPCR)[3] == "Dilution") {
@@ -101,6 +100,9 @@ if (colnames(qPCR)[3] == "Dilution") {
   ## Relative quantities
   rel.q.results <- rd.rel.quant(qPCR = qPCR, Cq.list = Cq.list, eff.df = eff.df, GOIs = GOIs)
 } else {
+  ## Prepare colour scales
+  colour_scale <- rd.col.scale(qPCR = qPCR, colour.scheme = colour.scheme, posthoc = posthoc)
+  ## Relative quantities
   rel.q.results <- rd.rel.quant.2(qPCR = qPCR, GOIs = GOIs)
 }
 
@@ -208,5 +210,7 @@ if (test.type == "non-parametric") {
 save.tables <- rd.save.tables(input.table = input.table, rel.q.detailed = rel.q.norm.results$rel.q.detailed, rel.q.detailed.log = rel.q.norm.results$rel.q.detailed.log, rel.q.mean = statistics.results$rel.q.mean, rel.q.mean.log = statistics.results$rel.q.mean.log, p = alpha)
 
 ## Print warning messages if any
-rd.warnings <- rd.warn(ref.sample = statistics.results$ref.sample, rel.q.mean = statistics.results$rel.q.mean, noref.warn = noref.warn, statistics = statistics.results$statistics, posthoc = posthoc, nostatref.warn = nostatref.warn, frw = statistics.results$frw, few.repl.warn = statistics.results$few.repl.warn, rel.q.mean.log = rel.q.results.log$rel.q.mean.log, missingref.warn = missingref.warn, nonorm = rel.q.norm.results$nonorm, nonorm.warn = nonorm.warn, sel.pairs = statistics.results$sel.pairs, sel.pairs.warn = statistics.results$sel.pairs.warn)
-
+if (exists("statistics.results")) {
+  rd.warnings <- rd.warn(ref.sample = statistics.results$ref.sample, rel.q.mean = statistics.results$rel.q.mean, noref.warn = noref.warn, statistics = statistics.results$statistics, posthoc = posthoc, nostatref.warn = nostatref.warn, frw = statistics.results$frw, few.repl.warn = statistics.results$few.repl.warn, rel.q.mean.log = rel.q.results.log$rel.q.mean.log, missingref.warn = missingref.warn, nonorm = rel.q.norm.results$nonorm, nonorm.warn = nonorm.warn, sel.pairs = statistics.results$sel.pairs, sel.pairs.warn = statistics.results$sel.pairs.warn)
+}
+rd.warnings.2 <- rd.warn.2(csv.wrong.format = inp.data$csv.wrong.format)

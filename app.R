@@ -1,7 +1,7 @@
 ## Title: repDilPCR - a Shiny App to Analyze qPCR Data by the Dilution-replicate Method
 ## File name: app.R
-## Version: 1.1.1
-## Date: 2023-04-17
+## Version: 1.1.2
+## Date: 2023-05-08
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
@@ -267,7 +267,7 @@ server <- function(input, output, session) {
 
   # Make a virtual reference gene by averaging the Cq values of the real reference genes at each sample/dilution/replicate combination ----
   qPCR.NF <- reactive({
-    if (input$analyze > 0) {
+    if (inp.data()$csv.wrong.format == "no" && input$analyze > 0) {
       if (colnames(inp.data()$qPCR)[3] == "Dilution") {
         rd.ref(qPCR(), input$RG)
         } else {
@@ -286,7 +286,7 @@ server <- function(input, output, session) {
   })
 
   observe({
-    if (colnames(inp.data()$qPCR)[3] != "Dilution") {
+    if (exists("inp.data()$qPCR") && colnames(inp.data()$qPCR)[3] != "Dilution") {
       hideTab(inputId = "panels", target = "9")
       hideTab(inputId = "panels", target = "10")
       hideTab(inputId = "downloads", target = "11")
@@ -1278,9 +1278,25 @@ server <- function(input, output, session) {
   
   ## Print warning messages if any
   warnings <- reactive({
-    rd.warn(ref.sample = statistics.results()$ref.sample, rel.q.mean = statistics.results()$rel.q.mean, noref.warn = "A valid name of a sample to be used as baseline reference was not provided! Calculated relative quantities are not normalized to a particular sample.", statistics = input$statistics, posthoc = input$posthoc, nostatref.warn = "A reference group for the Dunnett post-hoc test has not been chosen. Please check your input.", frw = statistics.results()$frw, few.repl.warn = statistics.results()$few.repl.warn, rel.q.mean.log = rel.q.results.log()$rel.q.mean.log, missingref.warn = "The chosen reference sample had missing data for one or more genes of interest! The respective plots will be empty and the result tables will not contain data for these genes. Choose a different reference sample or none to process and display all data.", nonorm = rel.q.norm.results()$nonorm, nonorm.warn = "The chosen reference sample had missing data for one or more genes of interest! Statistical tests have not been performed! Please choose a different reference sample or none.", sel.pairs = statistics.results()$sel.pairs, sel.pairs.warn = statistics.results()$sel.pairs.warn)
+    req(statistics.results())
+    rd.warn(ref.sample = statistics.results()$ref.sample, rel.q.mean = statistics.results()$rel.q.mean,
+            noref.warn = "A valid name of a sample to be used as baseline reference was not provided! Calculated relative quantities are not normalized to a particular sample.",
+            statistics = input$statistics, posthoc = input$posthoc,
+            nostatref.warn = "A reference group for the Dunnett post-hoc test has not been chosen. Please check your input.",
+            frw = statistics.results()$frw, few.repl.warn = statistics.results()$few.repl.warn,
+            rel.q.mean.log = rel.q.results.log()$rel.q.mean.log, missingref.warn = "The chosen reference sample had missing data for one or more genes of interest! The respective plots will be empty and the result tables will not contain data for these genes. Choose a different reference sample or none to process and display all data.",
+            nonorm = rel.q.norm.results()$nonorm, nonorm.warn = "The chosen reference sample had missing data for one or more genes of interest! Statistical tests have not been performed! Please choose a different reference sample or none.",
+            sel.pairs = statistics.results()$sel.pairs, sel.pairs.warn = statistics.results()$sel.pairs.warn)
+    #         csv.wrong.format = inp.data()$csv.wrong.format)
+    # } else {
+      # rd.warn.2(csv.wrong.format = inp.data()$csv.wrong.format)
+      # }
   })
 
+  warnings.2 <- reactive({
+    rd.warn.2(csv.wrong.format = inp.data()$csv.wrong.format)
+  })
+  
   observeEvent(warnings()$noref.warn, {
     shinyalert("Warning!", warnings()$noref.warn, type = "warning")
   })
@@ -1304,6 +1320,11 @@ server <- function(input, output, session) {
   observeEvent(warnings()$sel.pairs.warn, {
     shinyalert("Warning!", warnings()$sel.pairs.warn, type = "warning")
   })
+  
+  observeEvent(warnings.2()$csv.wrong.format, {
+    shinyalert("Error!", warnings.2()$csv.wrong.format, type = "warning")
+  })
+  
   
 
   ## Remove temporary files if any

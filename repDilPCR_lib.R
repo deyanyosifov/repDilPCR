@@ -1,7 +1,7 @@
 ## Title: A Library of Functions Used by both the repDilPCR R Script and the repDilPCR Shiny App
 ## File name: repDilPCR_lib.R
-## Version: 1.1.1
-## Date: 2023-04-17
+## Version: 1.1.2
+## Date: 2023-05-08
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
@@ -86,6 +86,7 @@ png.plot.2 <- function(ggplot.object, fname, type.name, png.size, png.dpi) {
 ## Prepare data
 # qPCR <- read.csv(input.table, sep = ",", dec = ".", stringsAsFactors = TRUE) ## input data file name (insert it between the quotation marks)
 rd.preprocess <- function(qPCR, RG) {
+  if (length(colnames(qPCR)) > 3 && colnames(qPCR)[1:3] == c("Replicates", "Pairs", "Dilution") && identical(qPCR[,-c(1:3)], qPCR[,-c(1:3)] %>% select(where(is.numeric)))) {
   num.genes <- ncol(qPCR) - 3
   col.names <- colnames(qPCR)
   gene.names <- col.names[4:ncol(qPCR)]
@@ -95,19 +96,32 @@ rd.preprocess <- function(qPCR, RG) {
   qPCR$Samples <- as.factor(gsub("_.*","",qPCR$Replicates))
   qPCR$Replicates <- factor(qPCR$Replicates, levels = unique(qPCR$Replicates))
   qPCR$Samples <- factor(qPCR$Samples, levels = unique(qPCR$Samples))
-  preprocess.output <- list("qPCR" = qPCR, "ref.genes" = ref.genes, "all.genes" = all.genes, "GOIs" = GOIs)
+  csv.wrong.format <- "no"
+  preprocess.output <- list("qPCR" = qPCR, "ref.genes" = ref.genes, "all.genes" = all.genes, "GOIs" = GOIs,"csv.wrong.format" = csv.wrong.format)
   return(preprocess.output)
+  } else {
+    csv.wrong.format <- "yes"
+    preprocess.output <- list("csv.wrong.format" = csv.wrong.format)
+    return(preprocess.output)
+  }
 }
 
 rd.preprocess.2 <- function(qPCR) {
-  rownames(qPCR) <- qPCR$Replicates
-  # qPCR <- qPCR[,2:ncol(qPCR)]
-  GOIs <- colnames(qPCR)[3:ncol(qPCR)]
-  qPCR$Samples <- as.factor(gsub("_.*","",qPCR$Replicates))
-  qPCR$Replicates <- factor(qPCR$Replicates, levels = unique(qPCR$Replicates))
-  qPCR$Samples <- factor(qPCR$Samples, levels = unique(qPCR$Samples))
-  preprocess.output <- list("qPCR" = qPCR, "GOIs" = GOIs)
-  return(preprocess.output)
+  if (length(colnames(qPCR)) > 2 && colnames(qPCR)[1:2] == c("Replicates", "Pairs") && identical(qPCR[,-c(1:2)], qPCR[,-c(1:2)] %>% select(where(is.numeric)))) {
+    rownames(qPCR) <- qPCR$Replicates
+    # qPCR <- qPCR[,2:ncol(qPCR)]
+    GOIs <- colnames(qPCR)[3:ncol(qPCR)]
+    qPCR$Samples <- as.factor(gsub("_.*","",qPCR$Replicates))
+    qPCR$Replicates <- factor(qPCR$Replicates, levels = unique(qPCR$Replicates))
+    qPCR$Samples <- factor(qPCR$Samples, levels = unique(qPCR$Samples))
+    csv.wrong.format <- "no"
+    preprocess.output <- list("qPCR" = qPCR, "GOIs" = GOIs, "csv.wrong.format" = csv.wrong.format)
+    return(preprocess.output)
+  } else {
+    csv.wrong.format <- "yes"
+    preprocess.output <- list("csv.wrong.format" = csv.wrong.format)
+    return(preprocess.output)
+  }
 }
 
 ## Imputation of missing Cq values of reference genes (optional step)
@@ -543,9 +557,9 @@ rd.normalize <- function(rel.q.detailed, rel.q.detailed.log, rel.q.df, rel.q.log
   if (ref.sample == "default") {
     ref.sample <- rel.q.mean[1, "Samples"]
   }
+  nonorm <- 0
   if (ref.sample %in% rel.q.mean$Samples) {
     norm.factor.log <- norm.factor <- numeric()
-    nonorm <- 0
     for (i in unique(rel.q.mean$Genes)) {
       norm.factor[i] <- rel.q.mean[which(rel.q.mean$Genes == i & rel.q.mean$Samples == ref.sample),"Expression"]
       norm.factor.log[i] <- rel.q.mean.log[which(rel.q.mean.log$Genes == i & rel.q.mean.log$Samples == ref.sample),"Expression"]
@@ -1579,7 +1593,7 @@ return(save.tables)
 
 
 ## Print warning messages if any
-rd.warn <- function(ref.sample, rel.q.mean, noref.warn, statistics, posthoc, nostatref.warn, frw, few.repl.warn, rel.q.mean.log, missingref.warn, nonorm, nonorm.warn, sel.pairs, sel.pairs.warn) {
+rd.warn <- function(ref.sample, rel.q.mean, noref.warn, statistics, posthoc, nostatref.warn, frw, few.repl.warn, rel.q.mean.log, missingref.warn, nonorm, nonorm.warn, sel.pairs, sel.pairs.warn, csv.wrong.format) {
   warnings <- list()
   if ((ref.sample %in% rel.q.mean$Samples) == FALSE) {
     warnings[["noref.warn"]] <- noref.warn
@@ -1600,8 +1614,23 @@ rd.warn <- function(ref.sample, rel.q.mean, noref.warn, statistics, posthoc, nos
   if (posthoc == "selected pairs" && sel.pairs == FALSE) {
     warnings[["sel.pairs.warn"]] <- sel.pairs.warn
   }
+  # if (csv.wrong.format == "yes") {
+  #   warnings[["csv.wrong.format"]] <- "Wrong format of the CSV file! Please provide a CSV file conforming to the specifications (see the manual)."
+  # }
   if (length(warnings) != 0) {
     warning(warnings)
     return(warnings)
   }
 }
+
+rd.warn.2 <- function(csv.wrong.format) {
+  warnings.2 <- list()
+  if (csv.wrong.format == "yes") {
+    warnings.2[["csv.wrong.format"]] <- "Wrong format of the CSV file! Please provide a CSV file conforming to the specifications (see the manual)."
+  }
+  if (length(warnings.2) != 0) {
+    warning(warnings.2)
+    return(warnings.2)
+  }
+}
+
