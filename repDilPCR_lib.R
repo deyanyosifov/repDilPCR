@@ -1,7 +1,7 @@
 ## Title: A Library of Functions Used by both the repDilPCR R Script and the repDilPCR Shiny App
 ## File name: repDilPCR_lib.R
-## Version: 1.1.2
-## Date: 2023-05-08
+## Version: 1.1.3
+## Date: 2024-03-09
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
@@ -86,7 +86,7 @@ png.plot.2 <- function(ggplot.object, fname, type.name, png.size, png.dpi) {
 ## Prepare data
 # qPCR <- read.csv(input.table, sep = ",", dec = ".", stringsAsFactors = TRUE) ## input data file name (insert it between the quotation marks)
 rd.preprocess <- function(qPCR, RG) {
-  if (length(colnames(qPCR)) > 3 && colnames(qPCR)[1:3] == c("Replicates", "Pairs", "Dilution") && identical(qPCR[,-c(1:3)], qPCR[,-c(1:3)] %>% select(where(is.numeric)))) {
+  if (length(colnames(qPCR)) > 3 && all(colnames(qPCR)[1:3] == c("Replicates", "Pairs", "Dilution")) && identical(qPCR[,-c(1:3)], qPCR[,-c(1:3)] %>% select(where(is.numeric)))) {
   num.genes <- ncol(qPCR) - 3
   col.names <- colnames(qPCR)
   gene.names <- col.names[4:ncol(qPCR)]
@@ -107,7 +107,7 @@ rd.preprocess <- function(qPCR, RG) {
 }
 
 rd.preprocess.2 <- function(qPCR) {
-  if (length(colnames(qPCR)) > 2 && colnames(qPCR)[1:2] == c("Replicates", "Pairs") && identical(qPCR[,-c(1:2)], qPCR[,-c(1:2)] %>% select(where(is.numeric)))) {
+  if (length(colnames(qPCR)) > 2 && all(colnames(qPCR)[1:2] == c("Replicates", "Pairs")) && identical(qPCR[,-c(1:2)], qPCR[,-c(1:2)] %>% select(where(is.numeric)))) {
     rownames(qPCR) <- qPCR$Replicates
     # qPCR <- qPCR[,2:ncol(qPCR)]
     GOIs <- colnames(qPCR)[3:ncol(qPCR)]
