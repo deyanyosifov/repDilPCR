@@ -3,6 +3,8 @@
 <div align="justify">
 repDilPCR is a software tool to analyze qPCR data. It has been inspired by the efficient dilution-replicate design for real-time PCR assays by Hui and Feng (Kwokyin Hui & Zhong-Ping Feng. Efficient experimental design and analysis of real-time PCR assays. Channels 2013, 7:3, 160-170, https://doi.org/10.4161/chan.24024) and is the first tool to enable the analysis of experiments performed according to this design. The statistical and the graphical functions of the program can also be used with preprocessed data obtained by more conventional assay designs and evaluation methods.
 
+**New!** repDilPCR is now published in [BMC Bioinformatics](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-024-05954-9).
+
 ## Key features
 * Fast and easy to use
   * single-click analysis of a whole dataset
@@ -249,7 +251,7 @@ No, you can also feed precalculated relative quantities into the program. Of cou
 
 *repDilPCR seems nice and I would like to try it but I have doubts about the dilution-replicate method. Does it give comparable results to the traditional methods?*
 
-In our lab, we have directly compared the dilution-replicate approach with two of the most widely used traditional methods, the standard curve method and LinRegPCR (Ruijter et al., Amplification efficiency: linking baseline and bias in the analysis of quantitative PCR data. Nucleic Acids Research 2009, 37:6, e45, https://doi.org/10.1093/nar/gkp045), using the same samples. Generally, the three methods yielded very similar results but the standard curve method and repDilPCR outperformed LinRegPCR in an assay for miRNAs as the amplification curves in this assay had lower plateau and shorter exponential part which was not sufficient for LinRegPCR to reliably determine the so called window of linearity that this method relies upon for calculating reaction efficiences.
+In our lab, we have directly compared the dilution-replicate approach with two of the most widely used traditional methods, the standard curve method and LinRegPCR (Ruijter et al., Amplification efficiency: linking baseline and bias in the analysis of quantitative PCR data. Nucleic Acids Research 2009, 37:6, e45, https://doi.org/10.1093/nar/gkp045), using the same samples. The reuslts of the comparison have been published in [BMC Bionformatics](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-024-05954-9). Generally, the three methods yielded very similar results but the standard curve method and repDilPCR outperformed LinRegPCR in an assay for miRNAs as the amplification curves in this assay had lower plateau and shorter exponential part which was not sufficient for LinRegPCR to reliably determine the so called window of linearity that this method relies upon for calculating reaction efficiences.
 
 *Do I need technical replicates with the dilution-replicate method?*
 
