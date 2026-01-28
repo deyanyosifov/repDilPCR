@@ -1,7 +1,7 @@
 ## Title: repDilPCR - a Shiny App to Analyze qPCR Data by the Dilution-replicate Method
 ## File name: app.R
-## Version: 1.1.3
-## Date: 2024-03-09
+## Version: 1.1.4
+## Date: 2026-01-28
 ## Author: Deyan Yordanov Yosifov
 ## Maintainer: Deyan Yordanov Yosifov <deyan.yosifov@uniklinik-ulm.de>
 ## Copyright: University Hospital Ulm, Germany, 2021
@@ -172,8 +172,9 @@ ui <- fluidPage(
                    )
                  )
         ),
-        tabPanel("About/Help", h3(tagList("The repDilPCR program was written by Deyan Yordanov Yosifov at the Department of Internal Medicine III of the University Hospital in Ulm, Germany.
-                                     The program is inspired by the dilution-replicate approach for design and analysis of real-time PCR assays (Kwokyin Hui & Zhong-Ping Feng (2013)
+        tabPanel("About/Help", h3(tagList("The repDilPCR program has been written by Deyan Yordanov Yosifov at the Department of Internal Medicine III of the University Hospital in Ulm, Germany. If you use repDilPCR in your research, please cite the ", a("associated article", href = "https://doi.org/10.1186/s12859-024-05954-9", target = "_blank", .noWS = "after"), ":"), style="font-size:12pt;text-align:justify;padding-right:10px;"),
+                          h3(tagList("Yosifov, D.Y., Reichenzeller, M., Stilgenbauer, S., Mertens, D. repDilPCR: a tool for automated analysis of qPCR assays by the dilution-replicate method. BMC Bioinformatics 25, 331 (2024). DOI: ", a("10.1186/s12859-024-05954-9", href = "https://doi.org/10.1186/s12859-024-05954-9", target = "_blank", .noWS = "after"),"."), style="font-size:16pt;text-align:justify;padding-right:10px;"),
+                          h3(tagList("repDilPCR has been inspired by the dilution-replicate approach for design and analysis of real-time PCR assays (Kwokyin Hui & Zhong-Ping Feng (2013)
                                      Efficient experimental design and analysis of real-time PCR assays, Channels, 7:3, 160-170, DOI: ", a("10.4161/chan.24024", href = "https://doi.org/10.4161/chan.24024", target = "_blank", .noWS = "after"), ")."), style="font-size:12pt;text-align:justify;padding-right:10px;"),
                           h3(tagList("\u2003")),
                           h3(tags$b("Overview"), style="font-size:14pt"),
@@ -194,7 +195,7 @@ ui <- fluidPage(
                                      export intermediate data and perform more sophisticated analyses with external statistical software, e.g. if two-way ANOVA is necessary."), style="font-size:12pt;text-align:justify;padding-right:10px;"),
                           h3(tagList("\u2003")),         
                           h3(tags$b("Help"), style="font-size:14pt"),
-                          h3(tagList("A detailed user manual and the source code of the program are available ", a("here", href = "https://github.com/deyanyosifov/repDilPCR", target = "_blank", .noWS = "after"), ". New users of the dilution-replicate method are advised to read the ", a("article", href = "https://doi.org/10.4161/chan.24024", target = "_blank")," by Hui and Feng before setting up their experiment and using the program."), style="font-size:12pt;text-align:justify;padding-right:10px;"),
+                          h3(tagList("A detailed user manual and the source code of the program are available ", a("here", href = "https://github.com/deyanyosifov/repDilPCR", target = "_blank", .noWS = "after"), ". The associated article is available from the website of ", a("BMC Bioinformatics", href = "https://doi.org/10.1186/s12859-024-05954-9", target = "_blank", .noWS = "after"), ". New users of the dilution-replicate method are advised to read the ", a("article", href = "https://doi.org/10.4161/chan.24024", target = "_blank")," by Hui and Feng before setting up their experiment and using the program."), style="font-size:12pt;text-align:justify;padding-right:10px;"),
                           h3(tagList("\u2003")),
                           h3(tags$b("Test data downloads"), style="font-size:14pt"),
                           uiOutput("download.test.data"),
@@ -206,7 +207,7 @@ ui <- fluidPage(
                           h3(tagList("The GitHub page of the repDilPCR project has a ", a("Discussions tab", href = "https://github.com/deyanyosifov/repDilPCR/discussions", target = "_blank"), "where users can ask questions, report bugs, suggest new features, express constructive criticism or get help from the developer, as well as from other users. The developer is also accessible by e-mail at ", a(href = "mailto:deyan.yosifov@uniklinik-ulm.de", "deyan.yosifov@uniklinik-ulm.de", .noWS = "after"),"."), style="font-size:12pt;text-align:justify;padding-right:10px;"),
                           h3(tagList("\u2003")),
                           h3(tags$b("Version number"), style="font-size:14pt"),
-                          h3(tagList("1.1.3"), style="font-size:12pt"),
+                          h3(tagList("1.1.4"), style="font-size:12pt"),
                           h6(textOutput("count"), style="font-size:10pt; color: #fff")),
         tabPanel("Terms of Use", h3(tagList(text = tags$div(style = 'overflow:auto;max-height:100vh;text-align:justify;padding-right:10px;',
                                  h5("The repDilPCR Shiny App is a tool for scientific analysis, visualization and interpretation of qPCR data. The tool has not been clinically validated; the use of data and results generated by the repDilPCR app is for scientific purposes only. Use for diagnostic or therapeutic purposes and/or implementation of the results in clinical studies is solely the responsibility of the user and the treating physician."),
@@ -1225,7 +1226,7 @@ server <- function(input, output, session) {
   )
 
   output$download.rel.q.mean <- renderUI({
-    req(input$input.table, save.tables()$rel.q.mean, )
+    req(input$input.table, save.tables()$rel.q.mean)
     downloadButton("download.rel.q.mean1", "Download table with calculated relative mean expression values (linear scale)")
   })
 
@@ -1331,7 +1332,7 @@ server <- function(input, output, session) {
   session$onSessionEnded(function() {
     delfil <- isolate(gsub(".{4}$", "*", input$input.table$name))
     if (length(Sys.glob(delfil)) != 0) {
-      if (file.exists(Sys.glob(delfil))) {
+      if (file.exists(Sys.glob(delfil)[1])) {
         delfil.list <- Sys.glob(delfil)
         delfil.list <- delfil.list[!grepl(paste0(c(".R$", "Test_data.csv", "Test_data_precalc.csv", "counter.txt", "LICENSE", "README.md", "Terms_of_use"), collapse = "|"), delfil.list)]
         file.remove(delfil.list)

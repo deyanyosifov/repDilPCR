@@ -19,7 +19,7 @@ repDilPCR is a software tool to analyze qPCR data. It has been inspired by the e
 * Possibility to export tabular data at each intermediate step to analyze with third-party programs
 
 ## Installation
-The program can be installed on a local computer or on a server (see below). Alternatively, users can freely access and use a working installation hosted on a server at the German Cancer Research Center in Heidelberg, Germany (https://repdilpcr.eu). This service is anonymous, does not require registration and complies with common standards for protection of user data: raw data uploaded by the user are processed on the server and used to generate results that can be downloaded by the user; after the user closes the session by closing the browser window all uploaded data and processed results are automatically deleted from the server (**Warning: if you use a local installation of repDilPCR, do not store your data in the folder where repDilPCR is installed!**).
+The program can be installed on a local computer or on a server (see below). Alternatively, users can freely access and use repDilPCR as a web application: https://repdilpcr.eu. This service is anonymous, does not require registration and complies with common standards for protection of user data: raw data uploaded by the user are processed on the server and used to generate results that can be downloaded by the user; after the user closes the session by closing the browser window all uploaded data and processed results are automatically deleted from the server (**Warning: if you use a local installation of repDilPCR, do not store your data in the folder where repDilPCR is installed!**).
 
 #### Prerequisites for installation
 * A working installation of R (version 3.6.0 or more recent) on a computer with a Linux or Windows operating system. (Theoretically MacOS should be possible, too, but I haven't had the chance to test whether it works.) The RStudio integrated development environment is recommended for convenient use of the script but not required.
@@ -35,7 +35,7 @@ This option is only possible on a server running Linux. Apart from the prerequis
 repDilPCR has been confirmed to work with the following combinations of browsers and operating systems:
 | OS      | Version      | Chrome | Firefox | Microsoft Edge | Safari |
 | ------- | ------------ | ------ | ------- | -------------- | ------ |
-| Linux   | Ubuntu 20.04 | 107.0  | 106.0   | n/a            | n/a    |
+| Linux   | Ubuntu 24.04 | 143.0  | 147.0   | n/a            | n/a    |
 | Windows | 10           | 107.0  | 107.0   | 107.0          | n/a    |
 | MacOS   | Monterey     | 107.0  | 105.0   | 106.0          | 15.6   |
 
@@ -241,7 +241,7 @@ It will take from a few seconds up to a minute for the script to execute dependi
 
 ## Data protection policy of the Shiny app
 
-Data uploaded by the user to the Shiny app are stored on the server as temporary files only while being processed. All raw data, temporary intermediate files and end results are deleted from the server immediately after closing the user session. This applies also to the publicly accessible installation of repDilPCR that is hosted on a server at the German Cancer Research Center in Heidelberg, Germany (https://repdilpcr.eu).
+Data uploaded by the user to the Shiny app are stored on the server as temporary files only while being processed. All raw data, temporary intermediate files and end results are deleted from the server immediately after closing the user session. This applies also to the publicly accessible installation of repDilPCR (https://repdilpcr.eu).
 
 ## Frequently asked questions
 
